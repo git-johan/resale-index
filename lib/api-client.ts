@@ -202,7 +202,7 @@ class ApiClient {
         tagName: rawData.tags[0].tag_name,
         listingsInTag: rawData.tags[0].listings?.length || 0
       } : null,
-      allTagListingsCounts: rawData.tags?.map(tag => ({
+      allTagListingsCounts: rawData.tags?.map((tag: any) => ({
         name: tag.tag_name,
         listingsCount: tag.listings?.length || 0
       })) || []

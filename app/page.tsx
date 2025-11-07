@@ -454,22 +454,24 @@ function HomePageContent() {
           )}
         </>
       ) : (
-        <ExpandedDetailsView
-              brand={brand}
-              onClearBrand={handleClearBrand}
-              selectedTags={selectedTags}
-              excludedTags={excludedTags}
-              onUnselectTag={unselectTag}
-              onIncludeTag={includeTag}
-              onExcludeTag={excludeTag}
-              stats={data.stats}
-              listingsCount={data.listingsCount}
-              listings={detailedListings.data || []}
-              detailedListingsLoading={detailedListings.loading}
-              detailedListingsError={detailedListings.error}
-              onLoadDetailedListings={loadDetailedListings}
-              onClose={handleEstimateToggle}
-            />
+        data?.stats && (
+          <ExpandedDetailsView
+                brand={brand}
+                onClearBrand={handleClearBrand}
+                selectedTags={selectedTags}
+                excludedTags={excludedTags}
+                onUnselectTag={unselectTag}
+                onIncludeTag={includeTag}
+                onExcludeTag={excludeTag}
+                stats={data.stats}
+                listingsCount={data.listingsCount}
+                listings={detailedListings.data || []}
+                detailedListingsLoading={detailedListings.loading}
+                detailedListingsError={detailedListings.error}
+                onLoadDetailedListings={loadDetailedListings}
+                onClose={handleEstimateToggle}
+              />
+        )
       )}
     </div>
   )
