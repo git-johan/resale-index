@@ -8,6 +8,7 @@ export type StackItemVariant =
   | 'selected-excluded'
   | 'unselected'
   | 'estimate'
+  | 'subtitle'
 
 export type ActionType = 'include' | 'exclude' | 'link'
 
@@ -16,6 +17,7 @@ export interface Action {
   text?: string
   onClick: () => void
   active?: boolean
+  disabled?: boolean
   title?: string
 }
 
@@ -40,10 +42,24 @@ export interface Tag {
   color?: string
 }
 
+export interface Listing {
+  id?: string
+  title?: string
+  price?: string
+  condition?: string
+  date?: string
+  lastUpdatedAt?: string
+  url?: string
+  image?: string
+  brand?: string
+  tags?: string[]
+}
+
 export interface BrandData {
   brand: string
   listingsCount: number
   tags: Tag[]
+  listings: Listing[]
   stats: {
     estimate: string
     estimateRange: string
@@ -54,4 +70,49 @@ export interface BrandData {
 export interface TagOptions {
   selectedTags: Tag[]
   excludedTags: Tag[]
+}
+
+// Detailed listings types for "See all details" functionality
+export interface DetailedListingsState {
+  loading: boolean
+  error: string | null
+  listings: Listing[]
+  totalCount: number
+  lastFetched: Date | null
+}
+
+export interface DetailedBrandData extends BrandData {
+  detailedListings: DetailedListingsState
+}
+
+// API response types for detailed listings
+export interface DetailedListingsResponse {
+  listings: Listing[]
+  stats: {
+    listing_count: string
+    median_price: string
+    p25_price: string
+    p75_price: string
+    average_price?: string
+    volume?: string
+  }
+  tags: Array<{
+    tag_name: string
+    listing_count: string
+    median_price: string
+    p25_price: string
+    p75_price: string
+    average_price?: string
+    volume?: string
+    listings?: Listing[]
+  }>
+}
+
+// Loading states for UI components
+export type LoadingState = 'idle' | 'loading' | 'success' | 'error'
+
+export interface AsyncState<T> {
+  data: T | null
+  loading: boolean
+  error: string | null
 }

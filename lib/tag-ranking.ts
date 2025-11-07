@@ -68,7 +68,7 @@ function calculatePriceImpactScore(tagMedianPrice: number, currentEstimate: numb
 
 
 /**
- * Calculate similarity penalty (0 to -2 points)
+ * Calculate similarity penalty (0 to -6 points) - Aggressive penalty for strong diversity
  */
 function calculateSimilarityPenalty(tagName: string, selectedTags: Tag[]): number {
   if (selectedTags.length === 0) return 0
@@ -80,14 +80,17 @@ function calculateSimilarityPenalty(tagName: string, selectedTags: Tag[]): numbe
     maxSimilarity = Math.max(maxSimilarity, similarity)
   }
 
-  // Apply penalties based on similarity
-  if (maxSimilarity >= 80) return -2  // Very similar (>80%)
-  if (maxSimilarity >= 60) return -1  // Somewhat similar (60-80%)
-  return 0                            // Not similar (<60%)
+  // Apply graduated penalties based on similarity - stronger penalties for diversity
+  if (maxSimilarity >= 85) return -6  // Extremely similar (85%+) - heavy penalty
+  if (maxSimilarity >= 70) return -4  // Very similar (70-85%) - strong penalty
+  if (maxSimilarity >= 55) return -2  // Somewhat similar (55-70%) - moderate penalty
+  if (maxSimilarity >= 40) return -1  // Slightly similar (40-55%) - light penalty
+  return 0                            // Not similar (<40%) - no penalty
 }
 
 /**
- * Calculate overall score for a tag (-10 to +10) - Pure price impact + similarity penalty
+ * Calculate overall score for a tag (-10 to +10) - Pure price impact + strong similarity penalty
+ * Similarity penalties now range from -6 to 0, providing aggressive tag separation
  * Also returns raw price impact percentage for sorting within buckets
  */
 function calculateTagScore(
@@ -227,15 +230,19 @@ function isVerboseTag(tag: TagWithScore, allTags: TagWithScore[]): boolean {
 }
 
 /**
- * Sort tags by price impact magnitude first, then listing count, then name length (shorter = better)
+ * Sort tags by rank score first (includes similarity penalties), then listing count, then name length (shorter = better)
  */
-function sortByPriceImpactThenListingCount(tags: TagWithScore[]): TagWithScore[] {
+function sortByRankScoreThenListingCount(tags: TagWithScore[]): TagWithScore[] {
   return [...tags].sort((a, b) => {
-    // Primary sort: Price impact percentage (highest first)
-    const priceImpactDiff = b.priceImpactPercentage - a.priceImpactPercentage
-    if (Math.abs(priceImpactDiff) > 5) return priceImpactDiff // Only if significant difference
+    // Primary sort: Rank score (highest first) - this includes similarity penalties
+    const rankScoreDiff = b.rankScore - a.rankScore
+    if (Math.abs(rankScoreDiff) > 0.5) return rankScoreDiff // Respect similarity penalties
 
-    // Secondary sort: Listing count (highest first)
+    // Secondary sort: Price impact percentage (highest first) for similar scores
+    const priceImpactDiff = b.priceImpactPercentage - a.priceImpactPercentage
+    if (Math.abs(priceImpactDiff) > 5) return priceImpactDiff
+
+    // Tertiary sort: Listing count (highest first)
     const listingCountDiff = (b.listing_count || 0) - (a.listing_count || 0)
     if (Math.abs(listingCountDiff) > 100) return listingCountDiff // Only if significant difference
 
@@ -289,13 +296,14 @@ function filterTagsByPolarity(tagsWithScores: TagWithScore[]): TagWithScore[] {
 }
 
 /**
- * Main ranking function: ranks tags by price impact buckets, sorted by listing count within buckets
+ * Main ranking function: ranks tags by price impact buckets or pure listing count
  */
 export function rankTags(
   unselectedTags: Tag[],
   selectedTags: Tag[],
   currentEstimateString: string,
-  originalBrandEstimate?: number
+  originalBrandEstimate?: number,
+  sortBy: 'smart' | 'listing_count' = 'smart'
 ): Tag[] {
   // Parse current estimate (remove "kr" and convert to number)
   const currentEstimate = parseFloat(currentEstimateString.replace(/[^\d.]/g, '')) || 0
@@ -313,6 +321,34 @@ export function rankTags(
     }
   })
 
+  // Handle different sorting modes
+  if (sortBy === 'listing_count') {
+    // Pure listing count sorting - filter only excluded tags, sort by listing count
+    const filteredTags = tagsWithScores.filter(tag => !isTagExcluded(tag.name))
+
+    // Sort PURELY by listing count (highest to lowest) - ignore all other factors
+    const rankedTags = [...filteredTags].sort((a, b) => {
+      const listingCountA = a.listing_count || 0
+      const listingCountB = b.listing_count || 0
+
+      // Pure listing count sort HIGH TO LOW - no thresholds, no fallbacks
+      if (listingCountB !== listingCountA) {
+        return listingCountB - listingCountA  // HIGH to LOW: B-A gives descending order
+      }
+
+      // Only use name as final tie-breaker for identical counts
+      return a.name.localeCompare(b.name)
+    })
+
+    // Update price_range to show rank score and listing count
+    return rankedTags.map(tag => ({
+      ...tag,
+      price_range: formatTagDisplay(tag, tag.rankScore),
+      color: getScoreColor(tag.rankScore)
+    }))
+  }
+
+  // Default: Use smart algorithm with buckets and advanced filtering
   // Filter by polarity (20% negative, 80% positive) and apply listing count penalties
   const filteredTags = filterTagsByPolarity(tagsWithScores)
 
@@ -378,14 +414,14 @@ export function rankTags(
     }
   })
 
-  // Sort by price impact magnitude within each bucket, then by listing count
+  // Sort by rank score (with similarity penalties) within each bucket, then by listing count
   const rankedTags = [
-    ...sortByPriceImpactThenListingCount(buckets.S),  // Perfect ±10: Highest impact
-    ...sortByPriceImpactThenListingCount(buckets.A),  // ±8-9: Exceptional impact
-    ...sortByPriceImpactThenListingCount(buckets.B),  // ±5-7: High impact
-    ...sortByPriceImpactThenListingCount(buckets.C),  // ±2-4: Medium impact
-    ...sortByPriceImpactThenListingCount(buckets.D),  // ±0-1: Neutral/minimal impact
-    ...sortByPriceImpactThenListingCount(verboseTags)  // Verbose tags
+    ...sortByRankScoreThenListingCount(buckets.S),  // Perfect ±10: Highest impact
+    ...sortByRankScoreThenListingCount(buckets.A),  // ±8-9: Exceptional impact
+    ...sortByRankScoreThenListingCount(buckets.B),  // ±5-7: High impact
+    ...sortByRankScoreThenListingCount(buckets.C),  // ±2-4: Medium impact
+    ...sortByRankScoreThenListingCount(buckets.D),  // ±0-1: Neutral/minimal impact
+    ...sortByRankScoreThenListingCount(verboseTags)  // Verbose tags
     // Exclusions completely removed - not shown at all
   ]
 

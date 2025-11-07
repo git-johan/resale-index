@@ -1,0 +1,431 @@
+{
+	"info": {
+		"_postman_id": "resale-index-api-collection",
+		"name": "Resale Index API",
+		"description": "API collection for testing the Tings Resale Index application endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Brand Data",
+			"item": [
+				{
+					"name": "Get Nike Brand Data (Summary)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"nike\"],\n  \"tag\": [],\n  \"tagExclude\": [],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 0,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Get brand summary data without listings (optimized for performance)"
+					}
+				},
+				{
+					"name": "Get Adidas Brand Data (Summary)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"adidas\"],\n  \"tag\": [],\n  \"tagExclude\": [],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 0,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Get Adidas brand summary data"
+					}
+				},
+				{
+					"name": "Get Supreme Brand Data (Summary)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"supreme\"],\n  \"tag\": [],\n  \"tagExclude\": [],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 0,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Get Supreme brand summary data"
+					}
+				}
+			],
+			"description": "Get brand data with tag summaries (no listings)"
+		},
+		{
+			"name": "Filtered Searches",
+			"item": [
+				{
+					"name": "Nike with Selected Tags",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"nike\"],\n  \"tag\": [\"air max\", \"running\"],\n  \"tagExclude\": [],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 0,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Get Nike data filtered by specific tags (air max, running)"
+					}
+				},
+				{
+					"name": "Nike with Excluded Tags",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"nike\"],\n  \"tag\": [],\n  \"tagExclude\": [\"used\", \"damaged\"],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 0,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Get Nike data excluding specific tags (used, damaged)"
+					}
+				},
+				{
+					"name": "Complex Filter - Include and Exclude",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"nike\"],\n  \"tag\": [\"air jordan\", \"basketball\"],\n  \"tagExclude\": [\"replica\", \"damaged\"],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 0,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Complex filtering: include Air Jordan basketball shoes, exclude replicas and damaged items"
+					}
+				}
+			],
+			"description": "Test various filtering combinations with tags"
+		},
+		{
+			"name": "Detailed Listings",
+			"item": [
+				{
+					"name": "Nike with Sample Listings",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"nike\"],\n  \"tag\": [],\n  \"tagExclude\": [],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 100,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Get Nike data with sample listings (100 per tag) - for expandable panel"
+					}
+				},
+				{
+					"name": "Nike with Full Listings Dataset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"nike\"],\n  \"tag\": [],\n  \"tagExclude\": [],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 1000,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Get Nike data with extensive listings (1000 per tag) - for graphs and top 100 features"
+					}
+				},
+				{
+					"name": "Filtered Nike with Listings",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"nike\"],\n  \"tag\": [\"air max\"],\n  \"tagExclude\": [],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 500,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Get Nike Air Max data with detailed listings"
+					}
+				}
+			],
+			"description": "Requests that include actual listing data for analysis and visualization"
+		},
+		{
+			"name": "Edge Cases & Testing",
+			"item": [
+				{
+					"name": "Non-existent Brand",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"nonexistentbrand123\"],\n  \"tag\": [],\n  \"tagExclude\": [],\n  \"tagsLimit\": 200,\n  \"listingsPerTagLimit\": 0,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Test API behavior with non-existent brand"
+					}
+				},
+				{
+					"name": "Empty Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Test API behavior with empty request body"
+					}
+				},
+				{
+					"name": "High Limits Test",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": [\"nike\"],\n  \"tag\": [],\n  \"tagExclude\": [],\n  \"tagsLimit\": 500,\n  \"listingsPerTagLimit\": 10000,\n  \"usePostgres\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Test API performance with high limits (may take longer)"
+					}
+				},
+				{
+					"name": "CORS Preflight (OPTIONS)",
+					"request": {
+						"method": "OPTIONS",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"listings"
+							]
+						},
+						"description": "Test CORS preflight request"
+					}
+				}
+			],
+			"description": "Edge cases and error testing scenarios"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3003",
+			"description": "Base URL for local development"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set timestamp for request tracking",
+					"pm.globals.set('request_timestamp', new Date().toISOString());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Basic response validation",
+					"pm.test('Status code is 200', function () {",
+					"    pm.response.to.have.status(200);",
+					"});",
+					"",
+					"pm.test('Response time is less than 30 seconds', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+					"});",
+					"",
+					"pm.test('Response has valid JSON', function () {",
+					"    pm.response.to.be.json;",
+					"});",
+					"",
+					"// Check for expected data structure",
+					"if (pm.response.code === 200) {",
+					"    pm.test('Response contains expected fields', function () {",
+					"        const jsonData = pm.response.json();",
+					"        pm.expect(jsonData).to.have.property('tags');",
+					"        pm.expect(jsonData.tags).to.be.an('array');",
+					"    });",
+					"}",
+					"",
+					"// Log response size for performance monitoring",
+					"const responseSize = pm.response.responseSize;",
+					"console.log('Response size:', responseSize, 'bytes');",
+					"",
+					"// Log response time",
+					"console.log('Response time:', pm.response.responseTime, 'ms');"
+				]
+			}
+		}
+	]
+}

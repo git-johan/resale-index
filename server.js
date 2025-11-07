@@ -17,8 +17,8 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
-const PORT = 8080;
-const WEBSOCKET_PORT = 9001;
+const PORT = 3004;
+const WEBSOCKET_PORT = 3005;
 const API_URL = process.env.TINGS_RESALE_TAGS_URL;
 const API_KEY = process.env.TINGS_RESALE_API_KEY;
 

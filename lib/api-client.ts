@@ -1,7 +1,7 @@
 // API Client for React/Next.js
 // Extracted from vanilla JS apiService.js
 
-import { BrandData, TagOptions } from './types'
+import { BrandData, TagOptions, DetailedListingsResponse, Listing } from './types'
 
 interface CacheEntry {
   data: any
@@ -88,7 +88,7 @@ class ApiClient {
       tag: selectedTags.map(t => t.name), // Include tag names
       tagExclude: excludedTags.map(t => t.name), // Exclude tag names
       tagsLimit: 500,
-      listingsPerTagLimit: 0,
+      listingsPerTagLimit: 0, // Optimized for bandwidth - no listings in summary view
       usePostgres: true // Required for proper data
     }
 
@@ -96,6 +96,40 @@ class ApiClient {
 
     // Transform the raw API response to our expected format
     return this.transformBrandData(brandName, rawData, selectedTags, excludedTags)
+  }
+
+  /**
+   * Get detailed listings for "See all details" functionality
+   * Fetches up to 100k listings with full data
+   */
+  async getDetailedListings(brandName: string, options: TagOptions): Promise<DetailedListingsResponse> {
+    const {
+      selectedTags = [],
+      excludedTags = []
+    } = options
+
+    const requestData = {
+      brand: [brandName], // API expects brand as array
+      tag: selectedTags.map(t => t.name), // Include tag names
+      tagExclude: excludedTags.map(t => t.name), // Exclude tag names
+      tagsLimit: 200,
+      listingsPerTagLimit: 0, // Don't want per-tag breakdown
+      listingsSampleLimit: 100000, // Get ALL listings for entire filter
+      sampleLimit: 100000, // Try alternative parameter name
+      maxListings: 100000, // Try another alternative
+      limit: 100000, // Try simple limit
+      usePostgres: true // Required for proper data
+    }
+
+    console.log('API: Fetching detailed listings for', brandName, 'with options:', options)
+
+    // Clear cache for detailed listings to get fresh data with new limits
+    this.cache.clear()
+
+    const rawData = await this.request('/listings', requestData)
+
+    // Transform and return the detailed response
+    return this.transformDetailedListings(rawData)
   }
 
   /**
@@ -125,15 +159,111 @@ class ApiClient {
     // Get stored original brand estimate for scoring baseline
     const originalBrandEstimate = this.originalBrandEstimates.get(brandName.toLowerCase())
 
+    // Extract listings from response
+    const listings = rawData.listings?.map((listing: any) => ({
+      id: listing.id || listing.listing_id,
+      title: listing.title || listing.name || listing.listing_title,
+      price: listing.price ? `${listing.price} kr` : listing.price_string,
+      condition: listing.condition || listing.state,
+      date: listing.created_at || listing.date_listed,
+      url: listing.url || listing.listing_url,
+      image: listing.image_url || listing.thumbnail_url,
+      brand: listing.brand,
+      tags: listing.tags || []
+    })).filter((listing: any) => listing.id || listing.title) || []
+
     return {
       brand: brandName,
       listingsCount: parseInt(rawData.stats?.listing_count || '0'),
       tags,
+      listings,
       stats: {
         estimate: `${currentMedianPrice} kr`,
         estimateRange: `${rawData.stats?.p25_price || 0} - ${rawData.stats?.p75_price || 0} kr`,
         originalBrandEstimate
       }
+    }
+  }
+
+  /**
+   * Transform raw API response to DetailedListingsResponse format
+   */
+  private transformDetailedListings(rawData: any): DetailedListingsResponse {
+    // Debug: Log the response structure to understand where listings are
+    console.log('API Response for detailed listings:', {
+      hasListings: 'listings' in rawData,
+      hasListingsSample: 'listingsSample' in rawData,
+      topLevelKeys: Object.keys(rawData),
+      listingsCount: rawData.listings?.length || 0,
+      listingsSampleCount: rawData.listingsSample?.length || 0,
+      sampleListingsCount: rawData.sampleListings?.length || 0,
+      statsListingCount: rawData.stats?.listing_count || 'unknown',
+      firstTag: rawData.tags?.[0] ? {
+        tagName: rawData.tags[0].tag_name,
+        listingsInTag: rawData.tags[0].listings?.length || 0
+      } : null,
+      allTagListingsCounts: rawData.tags?.map(tag => ({
+        name: tag.tag_name,
+        listingsCount: tag.listings?.length || 0
+      })) || []
+    })
+
+    // Try to find listings in various possible locations
+    let rawListings = rawData.listings || rawData.listingsSample || rawData.sampleListings || []
+
+    // If no direct listings, check if they're nested in tags or other structures
+    if (rawListings.length === 0 && rawData.tags?.length > 0) {
+      // Check if listings are in the first tag (for debugging)
+      console.log('No top-level listings found. Checking first tag:', rawData.tags[0])
+    }
+
+    // Extract listings with comprehensive data
+    const listings: Listing[] = rawListings?.map((listing: any) => ({
+      id: listing.id || listing.listing_id,
+      title: listing.title || listing.name || listing.listing_title,
+      price: listing.price ? `${listing.price} kr` : listing.price_string,
+      condition: listing.condition || listing.state,
+      date: listing.created_at || listing.date_listed,
+      lastUpdatedAt: listing.last_updated_at || listing.updated_at || listing.lastUpdatedAt,
+      url: listing.url || listing.listing_url,
+      image: listing.image_url || listing.thumbnail_url,
+      brand: listing.brand,
+      tags: listing.tags || []
+    })).filter((listing: any) => listing.id || listing.title) || []
+
+    // Extract stats
+    const stats = {
+      listing_count: rawData.stats?.listing_count || '0',
+      median_price: rawData.stats?.median_price || '0',
+      p25_price: rawData.stats?.p25_price || '0',
+      p75_price: rawData.stats?.p75_price || '0',
+      average_price: rawData.stats?.average_price,
+      volume: rawData.stats?.volume
+    }
+
+    // Extract tags with their listings
+    const tags = rawData.tags?.map((tag: any) => ({
+      tag_name: tag.tag_name || '',
+      listing_count: tag.listing_count || '0',
+      median_price: tag.median_price || '0',
+      p25_price: tag.p25_price || '0',
+      p75_price: tag.p75_price || '0',
+      average_price: tag.average_price,
+      volume: tag.volume,
+      listings: tag.listings || []
+    })) || []
+
+    console.log(`API: Transformed ${listings.length} detailed listings from raw data:`, {
+      rawListingsLength: rawListings?.length || 0,
+      listingsLength: listings.length,
+      statsListingCount: rawData.stats?.listing_count,
+      firstFewListings: listings.slice(0, 3).map(l => ({ title: l.title, date: l.date, lastUpdatedAt: l.lastUpdatedAt }))
+    })
+
+    return {
+      listings,
+      stats,
+      tags
     }
   }
 

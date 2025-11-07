@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "app/page.tsx",
   "scripts": {
-    "dev": "PORT=8080 next dev",
+    "dev": "PORT=3003 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -24,10 +24,14 @@
   "license": "MIT",
   "description": "Professional resale index application with unified React component architecture",
   "dependencies": {
+    "chart.js": "^4.5.1",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
     "next": "^14.0.3",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "dotenv": "^17.2.3"
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.9.0",
