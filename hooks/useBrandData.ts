@@ -15,6 +15,7 @@ export interface UseBrandDataReturn {
   loading: boolean
   error: string | null
   refetch: () => void
+  clearData: () => void
 }
 
 export function useBrandData(
@@ -73,10 +74,17 @@ export function useBrandData(
     fetchData()
   }
 
+  const clearData = () => {
+    setData(null)
+    setLoading(false)
+    setError(null)
+  }
+
   return {
     data,
     loading,
     error,
-    refetch
+    refetch,
+    clearData
   }
 }

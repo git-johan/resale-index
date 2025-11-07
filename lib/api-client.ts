@@ -1,7 +1,7 @@
 // API Client for React/Next.js
 // Extracted from vanilla JS apiService.js
 
-import { BrandData, TagOptions, DetailedListingsResponse, Listing } from './types'
+import { BrandData, TagOptions, DetailedListingsResponse, Listing, BrandSuggestion, TagSuggestion, Tag } from './types'
 
 interface CacheEntry {
   data: any
@@ -96,6 +96,58 @@ class ApiClient {
 
     // Transform the raw API response to our expected format
     return this.transformBrandData(brandName, rawData, selectedTags, excludedTags)
+  }
+
+  /**
+   * Get brand autocomplete suggestions
+   */
+  async getBrandSuggestions(query: string): Promise<BrandSuggestion[]> {
+    // Don't make API calls for empty queries
+    if (!query || query.trim().length === 0) {
+      return []
+    }
+
+    const requestData = {
+      query: query.trim()
+    }
+
+    const rawData = await this.request('/brands/autocomplete', requestData)
+
+    // API returns array of BrandSuggestion objects directly
+    return rawData || []
+  }
+
+  /**
+   * Get tag autocomplete suggestions scoped to brand and current selections
+   */
+  async getTagSuggestions(
+    query: string,
+    brand: string,
+    selectedTags: Tag[],
+    excludedTags: Tag[]
+  ): Promise<TagSuggestion[]> {
+    // Don't make API calls for empty queries
+    if (!query || query.trim().length === 0) {
+      return []
+    }
+
+    const requestData = {
+      query: query.trim(),
+      brand: [brand],
+      tag: selectedTags.map(t => t.name),
+      tagExclude: excludedTags.map(t => t.name),
+      category: [],
+      categoryExclude: [],
+      limit: 20
+    }
+
+    const rawData = await this.request('/get-tags-autocomplete', requestData)
+
+    // Simple mapping from API response
+    return rawData?.map((tag: any) => ({
+      name: tag.tag_name,
+      listing_count: parseInt(tag.listing_count)
+    })).filter((tag: TagSuggestion) => tag.name) || []
   }
 
   /**

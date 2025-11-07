@@ -1,6 +1,7 @@
 'use client'
 
 import { StackItem } from '@/components/StackItem'
+import { SectionTitle } from '@/components/SectionTitle'
 import { PriceDistributionChart } from '@/components/PriceDistributionChart'
 import { BrandData, Listing } from '@/lib/types'
 import { formatTagDisplay, calculatePriceImpactScore, calculateSimilarityPenalty } from '@/lib/tag-ranking'
@@ -71,10 +72,7 @@ export function ExpandedDetailsView({
 
         {/* Tags section header */}
         {(selectedTags.length > 0 || excludedTags.length > 0) && (
-          <StackItem
-            variant="subtitle"
-            content="Tags"
-          />
+          <SectionTitle title="Tags" />
         )}
 
         {/* Selected Tags StackItems - Identical to main page */}
@@ -147,29 +145,27 @@ export function ExpandedDetailsView({
           )
         })}
 
-        {/* Estimate section header */}
-        <div className="border-t border-border-subtle">
+        {/* Estimate section with hover effect and click-to-close */}
+        <div className="group">
+          {/* Estimate section header with close action */}
+          <SectionTitle
+            title="Estimate"
+            action={{
+              text: 'Close details',
+              onClick: onClose
+            }}
+            showTopBorder
+            enableGroupHover
+          />
+
+          {/* Estimate StackItem - Clickable to close */}
           <StackItem
-            variant="subtitle"
-            content="Estimate"
+            variant="estimate"
+            content={stats.estimate}
+            details={`${stats.estimateRange} • ${listingsCount.toLocaleString('nb-NO')} listings`}
+            onClick={onClose}
           />
         </div>
-
-        {/* Estimate StackItem - Contains all estimate data together */}
-        <StackItem
-          variant="estimate"
-          content={stats.estimate}
-          details={`${stats.estimateRange} • ${listingsCount.toLocaleString('nb-NO')} listings`}
-          onClick={() => {}} // No-op, not clickable in expanded view
-          actions={[
-            {
-              type: 'link',
-              text: 'Close details',
-              onClick: onClose,
-              title: 'Close details'
-            }
-          ]}
-        />
 
         {/* Details Content Section */}
         <div className="space-y-0">

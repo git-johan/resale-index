@@ -18,9 +18,23 @@ export interface UseTagSelectionReturn {
 }
 
 export function useTagSelection(initialBrand?: string): UseTagSelectionReturn {
-  const [brand, setBrand] = useState(initialBrand || '')
+  const [brand, setBrandState] = useState(initialBrand || '')
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
   const [excludedTags, setExcludedTags] = useState<Tag[]>([])
+
+  // Set brand and clear existing tags if brand is changing
+  const setBrand = useCallback((newBrand: string) => {
+    const normalizedNewBrand = newBrand.toLowerCase().trim()
+    const normalizedCurrentBrand = brand.toLowerCase().trim()
+
+    // Only clear tags if we're actually changing to a different brand
+    if (normalizedNewBrand !== normalizedCurrentBrand && normalizedCurrentBrand !== '') {
+      setSelectedTags([])
+      setExcludedTags([])
+    }
+
+    setBrandState(normalizedNewBrand)
+  }, [brand])
 
   // Include a tag (add to selected, remove from excluded)
   const includeTag = useCallback((tag: Tag) => {
@@ -50,7 +64,7 @@ export function useTagSelection(initialBrand?: string): UseTagSelectionReturn {
 
   // Clear brand and all tags
   const clearBrand = useCallback(() => {
-    setBrand('')
+    setBrandState('')
     setSelectedTags([])
     setExcludedTags([])
   }, [])

@@ -55,6 +55,16 @@ export interface Listing {
   tags?: string[]
 }
 
+export interface BrandSuggestion {
+  name: string
+  listing_count: number
+}
+
+export interface TagSuggestion {
+  name: string
+  listing_count: number
+}
+
 export interface BrandData {
   brand: string
   listingsCount: number
