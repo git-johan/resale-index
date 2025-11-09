@@ -2,8 +2,53 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Tings Resale Index',
-  description: 'Second hand estimates for any product',
+  title: 'Tings Analytics',
+  description: 'Professional resale value analytics for streetwear and sneakers. Get instant price estimates with smart tag filtering.',
+  keywords: ['resale', 'analytics', 'streetwear', 'sneakers', 'price estimates', 'tings'],
+  authors: [{ name: 'Tings' }],
+
+  // Favicon and app icons
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
+
+  // Open Graph for social sharing (Facebook, LinkedIn, etc.)
+  openGraph: {
+    title: 'Tings Analytics',
+    description: 'Professional resale value analytics for streetwear and sneakers. Get instant price estimates with smart tag filtering.',
+    url: 'https://analytics.tings.com',
+    siteName: 'Tings Analytics',
+    images: [
+      {
+        url: '/favicon.png', // Will use favicon as fallback, you can add a larger image later
+        width: 1200,
+        height: 630,
+        alt: 'Tings Analytics - Resale Value Analytics',
+      },
+    ],
+    locale: 'nb_NO',
+    type: 'website',
+  },
+
+  // Twitter Card for Twitter sharing
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Tings Analytics',
+    description: 'Professional resale value analytics for streetwear and sneakers.',
+    images: ['/favicon.png'],
+    creator: '@tings', // Add your Twitter handle if you have one
+  },
+
+  // Additional metadata
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  // Canonical URL
+  metadataBase: new URL('https://analytics.tings.com'),
 }
 
 export default function RootLayout({
