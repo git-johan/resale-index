@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Tings Analytics',
-  description: 'Professional resale value analytics for streetwear and sneakers. Get instant price estimates with smart tag filtering.',
+  description: 'Get instant resale price analytics for any product.',
   keywords: ['resale', 'analytics', 'streetwear', 'sneakers', 'price estimates', 'tings'],
   authors: [{ name: 'Tings' }],
 
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   // Open Graph for social sharing (Facebook, LinkedIn, etc.)
   openGraph: {
     title: 'Tings Analytics',
-    description: 'Professional resale value analytics for streetwear and sneakers. Get instant price estimates with smart tag filtering.',
+    description: 'Get instant resale price analytics for any product.',
     url: 'https://analytics.tings.com',
     siteName: 'Tings Analytics',
     images: [
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Tings Analytics',
-    description: 'Professional resale value analytics for streetwear and sneakers.',
+    description: 'Get instant resale price analytics for any product.',
     images: ['/social-share.png'],
     creator: '@tings', // Add your Twitter handle if you have one
   },
