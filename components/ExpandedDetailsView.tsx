@@ -132,8 +132,8 @@ export function ExpandedDetailsView({
                 </defs>
               </svg>
             </div>
-            {/* Text with 10pt gap - 24pt font */}
-            <h1 className="leading-1.2 m-0 font-semibold text-24pt">resale analytics</h1>
+            {/* Text with 10pt gap - 20pt font */}
+            <h1 className="leading-1.2 m-0 font-semibold text-20pt">resale analytics</h1>
           </div>
         </div>
 
@@ -315,7 +315,7 @@ export function ExpandedDetailsView({
         {/* Detailed Listings Table */}
         <div className="bg-brand-darker px-12pt py-8pt">
           <h4 className="text-13pt font-medium text-text-primary mb-8pt">
-            Listings ({listings.length > 0 ? listings.length.toLocaleString('nb-NO') : listingsCount.toLocaleString('nb-NO')} total)
+            Listings ({listings.length > 0 ? listings.length.toLocaleString('nb-NO') : listingsCount.toLocaleString('nb-NO')} total{(listings.length === 1000 || listingsCount === 1000) ? ' • sample' : ''})
           </h4>
 
           {/* Table Header */}

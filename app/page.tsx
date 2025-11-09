@@ -402,8 +402,8 @@ function HomePageContent() {
                     </defs>
                   </svg>
                 </div>
-                {/* Text with 10pt gap - 24pt font */}
-                <h1 className="leading-1.2 m-0 font-semibold text-24pt">resale analytics</h1>
+                {/* Text with 10pt gap - 20pt font */}
+                <h1 className="leading-1.2 m-0 font-semibold text-20pt">resale analytics</h1>
               </div>
             </div>
 
