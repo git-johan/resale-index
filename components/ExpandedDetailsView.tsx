@@ -330,7 +330,7 @@ export function ExpandedDetailsView({
               {/* Table Header */}
               <thead>
                 <tr className="border-b border-border-subtle">
-                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[300px]">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[280px]">
                     Title
                   </th>
                   <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[120px]">
@@ -418,7 +418,7 @@ export function ExpandedDetailsView({
                         key={listing.id || index}
                         className="border-b border-border-subtle hover:bg-brand-darker hover:bg-opacity-50 transition-colors"
                       >
-                        <td className="py-6pt pr-8pt min-w-[300px]">
+                        <td className="py-6pt pr-8pt min-w-[280px]">
                           <p className="text-10pt font-medium text-text-primary whitespace-nowrap">
                             {(listing.title || 'Untitled listing').length > 35
                               ? `${(listing.title || 'Untitled listing').substring(0, 35)}...`
