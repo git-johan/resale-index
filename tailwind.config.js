@@ -44,7 +44,7 @@ module.exports = {
       },
       colors: {
         'brand-dark': '#353535',
-        'brand-darker': '#121212',
+        'brand-darker': 'rgba(0, 0, 0, 0.4)',
         'brand-gray': '#9a9a9a',
         'brand-gray-dark': '#666666',
         'text-secondary': '#787878',
