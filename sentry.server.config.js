@@ -1,6 +1,8 @@
 // This file configures the initialization of Sentry on the server side
-import * as Sentry from '@sentry/nextjs'
+// import * as Sentry from '@sentry/nextjs'
 
+// TEMPORARILY DISABLED - Sentry may be causing mobile issues
+/*
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV || 'production',
@@ -20,3 +22,4 @@ Sentry.init({
     return event
   }
 })
+*/

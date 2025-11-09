@@ -11,7 +11,8 @@ import {
   Title,
   Tooltip,
   Legend,
-  ScatterController
+  ScatterController,
+  LineController
 } from 'chart.js'
 import { Scatter } from 'react-chartjs-2'
 import 'chartjs-adapter-date-fns'
@@ -27,7 +28,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ScatterController
+  ScatterController,
+  LineController
 )
 
 interface PriceDistributionChartProps {
@@ -196,7 +198,7 @@ export function PriceDistributionChart({ listings, height = 160, estimateValue, 
             const dataPoint = context.raw as ScatterDataPoint
             const price = context.parsed.y
             const date = new Date(context.parsed.x)
-            const formattedDate = date.toLocaleDateString('nb-NO', {
+            const formattedDate = date.toLocaleDateString('en-US', {
               day: '2-digit',
               month: 'short',
               year: 'numeric'
@@ -231,15 +233,16 @@ export function PriceDistributionChart({ listings, height = 160, estimateValue, 
             size: 10
           },
           maxTicksLimit: 5,
-          callback: function(value: any, index: any, values: any) {
-            // Get the default formatted value and convert to lowercase
-            const date = new Date(value)
-            const formatted = date.toLocaleDateString('en-US', {
-              month: 'short',
-              year: 'numeric'
-            })
-            return formatted.toLowerCase()
-          }
+          // Temporarily disable custom callback that might cause Safari issues
+          // callback: function(value: any, index: any, values: any) {
+          //   // Get the default formatted value and convert to lowercase
+          //   const date = new Date(value)
+          //   const formatted = date.toLocaleDateString('en-US', {
+          //     month: 'short',
+          //     year: 'numeric'
+          //   })
+          //   return formatted.toLowerCase()
+          // }
         },
         border: {
           display: false

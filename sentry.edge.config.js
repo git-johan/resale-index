@@ -1,6 +1,8 @@
 // This file configures the initialization of Sentry for Edge Runtime
-import * as Sentry from '@sentry/nextjs'
+// import * as Sentry from '@sentry/nextjs'
 
+// TEMPORARILY DISABLED - Sentry may be causing mobile issues
+/*
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV || 'production',
@@ -8,3 +10,4 @@ Sentry.init({
   // Adjust this value in production, or use tracesSampler for greater control
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0
 })
+*/
