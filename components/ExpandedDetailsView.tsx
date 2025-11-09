@@ -292,7 +292,7 @@ export function ExpandedDetailsView({
 
           {/* Price Distribution Chart */}
           {listings.length > 0 ? (
-            <PriceDistributionChart listings={listings} height={160} />
+            <PriceDistributionChart listings={listings} height={160} estimateValue={stats.estimate} estimateRange={stats.estimateRange} />
           ) : detailedListingsLoading ? (
             <div className="h-40 bg-brand-darker rounded border border-border-subtle flex items-center justify-center mb-12pt">
               <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>

@@ -6,6 +6,7 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
+  LineElement,
   TimeScale,
   Title,
   Tooltip,
@@ -21,6 +22,7 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
+  LineElement,
   TimeScale,
   Title,
   Tooltip,
@@ -31,6 +33,8 @@ ChartJS.register(
 interface PriceDistributionChartProps {
   listings: Listing[]
   height?: number
+  estimateValue?: string // The estimate value to show as horizontal line
+  estimateRange?: string // The estimate range to determine point colors
 }
 
 interface ScatterDataPoint {
@@ -39,10 +43,31 @@ interface ScatterDataPoint {
   title: string
 }
 
-export function PriceDistributionChart({ listings, height = 160 }: PriceDistributionChartProps) {
+// Helper function to parse estimate range (e.g., "1750-2799kr" -> { min: 1750, max: 2799 })
+function parseEstimateRange(rangeStr?: string): { min: number, max: number } | null {
+  if (!rangeStr) return null
+
+  // Match pattern like "1750-2799kr" or "1 750 - 2 799 kr"
+  const match = rangeStr.match(/(\d+(?:\s?\d+)*)\s*-\s*(\d+(?:\s?\d+)*)/);
+  if (!match) return null
+
+  const min = parseFloat(match[1].replace(/\s/g, ''))
+  const max = parseFloat(match[2].replace(/\s/g, ''))
+
+  if (isNaN(min) || isNaN(max)) return null
+
+  return { min, max }
+}
+
+export function PriceDistributionChart({ listings, height = 160, estimateValue, estimateRange }: PriceDistributionChartProps) {
   // Transform listings data to chart data
   const chartData = useMemo(() => {
-    const dataPoints: ScatterDataPoint[] = []
+    const withinRangePoints: ScatterDataPoint[] = []
+    const outsideRangePoints: ScatterDataPoint[] = []
+    const oneYearAgo = Date.now() - (365 * 24 * 60 * 60 * 1000) // 365 days in milliseconds
+
+    // Parse the estimate range
+    const range = parseEstimateRange(estimateRange)
 
     // Process each listing
     listings.forEach((listing) => {
@@ -52,32 +77,96 @@ export function PriceDistributionChart({ listings, height = 160 }: PriceDistribu
       // Parse date
       const date = parseDate(listing)
 
-      // Only include valid data points
-      if (price !== null && date !== null) {
-        dataPoints.push({
+      // Only include valid data points that are within the last 365 days
+      if (price !== null && date !== null && date >= oneYearAgo) {
+        const dataPoint = {
           x: date,
           y: price,
           title: listing.title || 'Untitled listing'
-        })
+        }
+
+        // Check if price is within estimate range
+        if (range && price >= range.min && price <= range.max) {
+          withinRangePoints.push(dataPoint)
+        } else {
+          outsideRangePoints.push(dataPoint)
+        }
       }
     })
 
-    return {
-      datasets: [
-        {
-          label: 'Listing Prices',
-          data: dataPoints,
-          backgroundColor: '#787878', // text-secondary gray
-          borderColor: 'transparent',
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          pointHoverBackgroundColor: '#9a9a9a', // brand-gray
-          pointBorderWidth: 0,
-          pointHoverBorderWidth: 0,
-        }
-      ]
+    // Parse estimate value for horizontal line
+    const estimatePrice = estimateValue ? parsePrice(estimateValue) : null
+    const estimateLineData: any[] = []
+
+    // Add estimate line if we have both estimate and data points
+    const allDataPoints = [...withinRangePoints, ...outsideRangePoints]
+    if (estimatePrice && allDataPoints.length > 0) {
+      const minDate = Math.min(...allDataPoints.map(p => p.x))
+      const maxDate = Math.max(...allDataPoints.map(p => p.x))
+
+      estimateLineData.push(
+        { x: minDate, y: estimatePrice },
+        { x: maxDate, y: estimatePrice }
+      )
     }
-  }, [listings])
+
+    const datasets: any[] = []
+
+    // Add dataset for points within estimate range (white)
+    if (withinRangePoints.length > 0) {
+      datasets.push({
+        label: 'Within Range',
+        data: withinRangePoints,
+        backgroundColor: '#ffffff', // white for within range
+        borderColor: 'transparent',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: '#ffffff',
+        pointBorderWidth: 0,
+        pointHoverBorderWidth: 0,
+        showLine: false,
+        type: 'scatter' as const
+      })
+    }
+
+    // Add dataset for points outside estimate range (light gray)
+    if (outsideRangePoints.length > 0) {
+      datasets.push({
+        label: 'Outside Range',
+        data: outsideRangePoints,
+        backgroundColor: '#9a9a9a', // brand-gray for outside range (lighter)
+        borderColor: 'transparent',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: '#9a9a9a', // brand-gray
+        pointBorderWidth: 0,
+        pointHoverBorderWidth: 0,
+        showLine: false,
+        type: 'scatter' as const
+      })
+    }
+
+    // Add estimate line dataset
+    if (estimateLineData.length > 0) {
+      datasets.push({
+        label: 'Estimate',
+        data: estimateLineData,
+        backgroundColor: '#ffffff',
+        borderColor: '#ffffff', // white line
+        borderWidth: 1,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: '#ffffff',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 1,
+        showLine: true,
+        type: 'line' as const,
+        tension: 0, // Straight line
+      })
+    }
+
+    return { datasets }
+  }, [listings, estimateValue, estimateRange])
 
   // Chart configuration
   const chartOptions = useMemo(() => ({
@@ -97,6 +186,13 @@ export function PriceDistributionChart({ listings, height = 160 }: PriceDistribu
         displayColors: false,
         callbacks: {
           label: function(context: any) {
+            // Check if this is the estimate line by dataset label
+            if (context.dataset.label === 'Estimate') {
+              const price = context.parsed.y
+              return `Estimate: ${price} kr`
+            }
+
+            // Regular listing data point
             const dataPoint = context.raw as ScatterDataPoint
             const price = context.parsed.y
             const date = new Date(context.parsed.x)
@@ -117,11 +213,12 @@ export function PriceDistributionChart({ listings, height = 160 }: PriceDistribu
       x: {
         type: 'time' as const,
         time: {
-          unit: 'day' as const,
+          unit: 'month' as const,
           displayFormats: {
             day: 'MMM d',
             week: 'MMM d',
-            month: 'MMM yyyy'
+            month: 'MMM yyyy',
+            year: 'yyyy'
           }
         },
         grid: {
@@ -204,7 +301,9 @@ export function PriceDistributionChart({ listings, height = 160 }: PriceDistribu
   }
 
   // Check if we have valid data points
-  const validDataPoints = chartData.datasets[0].data.length
+  const validDataPoints = chartData.datasets.reduce((total, dataset) => {
+    return dataset.label !== 'Estimate' ? total + dataset.data.length : total
+  }, 0)
   if (validDataPoints === 0) {
     return (
       <div className="h-40 bg-brand-darker rounded border border-border-subtle flex items-center justify-center">
