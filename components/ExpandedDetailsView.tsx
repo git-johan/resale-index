@@ -260,12 +260,6 @@ export function ExpandedDetailsView({
 
         {/* Estimate section - Sticky when scrolled */}
         <div className="sticky top-0 z-10 bg-brand-dark">
-          {/* Estimate section header - subtitle style */}
-          <StackItem
-            variant="subtitle"
-            content="Estimate"
-          />
-
           {/* Estimate section - two StackItems side by side */}
           <div className="bg-brand-darker flex">
             {/* Left: Estimate value and details */}
