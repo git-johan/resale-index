@@ -43,7 +43,7 @@ module.exports = {
         '33pt': '33pt',
       },
       colors: {
-        'brand-dark': '#1c1c1c',
+        'brand-dark': '#353535',
         'brand-darker': '#121212',
         'brand-gray': '#9a9a9a',
         'brand-gray-dark': '#666666',
