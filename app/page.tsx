@@ -1,20 +1,24 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { StackItem } from '@/components/StackItem'
-import { BrandSearch } from '@/components/BrandSearch'
+import { BrandSearch, BrandSearchRef } from '@/components/BrandSearch'
 import { TagSearch, TagSearchRef } from '@/components/TagSearch'
 import { ExpandedDetailsView } from '@/components/ExpandedDetailsView'
 import { SectionTitle } from '@/components/SectionTitle'
 import { useQueryState } from '@/hooks/useQueryState'
-import { rankTags, formatTagDisplay, calculatePriceImpactScore, calculateSimilarityPenalty } from '@/lib/tag-ranking'
+import { useTagSearch } from '@/hooks/useTagSearch'
+import { rankTags, formatTagDisplay, calculatePriceImpactScore, getScoreColor } from '@/lib/tag-ranking'
 import { apiClient } from '@/lib/api-client'
 import { Listing, AsyncState, TagSuggestion, Tag } from '@/lib/types'
 
 function HomePageContent() {
   const [isEstimateExpanded, setIsEstimateExpanded] = useState(false)
   const [estimateStickyMode, setEstimateStickyMode] = useState<'tags' | 'top'>('tags')
+
+  // Preserve previous stats while new data loads to prevent black screen
+  const [preservedStats, setPreservedStats] = useState<any>(null)
 
   // Detailed listings state
   const [detailedListings, setDetailedListings] = useState<AsyncState<Listing[]>>({
@@ -40,23 +44,118 @@ function HomePageContent() {
   // Ref for TagSearch component to control focus
   const tagSearchComponentRef = useRef<TagSearchRef>(null)
 
-  // Tag search state
-  const [tagSearchQuery, setTagSearchQuery] = useState('')
-  const [tagSearchSuggestions, setTagSearchSuggestions] = useState<TagSuggestion[]>([])
-  const [isLoadingTagSuggestions, setIsLoadingTagSuggestions] = useState(false)
-  const [isPendingTagSuggestions, setIsPendingTagSuggestions] = useState(false)
-  const [selectedResultIndex, setSelectedResultIndex] = useState(-1)
+  // Ref for BrandSearch component to control focus
+  const brandSearchComponentRef = useRef<BrandSearchRef>(null)
+
+  // Helper function to detect mobile devices
+  const isMobileDevice = useCallback(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(max-width: 768px)').matches ||
+           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  }, [])
 
   // Use simplified query state
   const {
     query,
     results: { data, loading, error },
     setBrand,
-    clearBrand,
+    clearBrand: originalClearBrand,
     includeTag,
     excludeTag,
     unselectTag
   } = useQueryState()
+
+  // Custom clearBrand that focuses brand search after clearing (desktop only)
+  const clearBrand = useCallback(() => {
+    originalClearBrand()
+
+    // Focus brand search input after clearing (desktop only)
+    if (!isMobileDevice()) {
+      setTimeout(() => {
+        brandSearchComponentRef.current?.focus()
+      }, 0)
+    }
+  }, [originalClearBrand, isMobileDevice])
+
+  // Unified tag search state
+  const tagSearch = useTagSearch({
+    brand: query.brand,
+    selectedTags: query.includedTags,
+    excludedTags: query.excludedTags,
+    onTagInclude: undefined, // Will be set below
+    onTagExclude: undefined, // Will be set below
+    onUnselectTag: unselectTag,
+    onClearBrand: clearBrand,
+    currentEstimate: data?.stats?.estimate || '0 kr',
+    maxResults: 10
+  })
+
+  // Helper functions for tag search integration with automatic search clearing
+  const handleTagIncludeFromSearch = useCallback((suggestion: TagSuggestion) => {
+    // Calculate score for new tag based on current estimate
+    const currentEstimate = parseFloat((data?.stats?.estimate || '0 kr').replace(/[^\d.]/g, '')) || 0
+    const medianPrice = parseFloat(suggestion.median_price || '0')
+
+    let rankScore: number | undefined = undefined
+    let color: string | undefined = undefined
+    if (currentEstimate > 0 && medianPrice > 0) {
+      rankScore = calculatePriceImpactScore(medianPrice, currentEstimate)
+      color = getScoreColor(rankScore)
+    }
+
+    const tag: Tag = {
+      name: suggestion.tag_name,
+      state: 'unselected',
+      listing_count: parseInt(suggestion.listing_count || '0'),
+      median_price: medianPrice,
+      p25_price: parseFloat(suggestion.p25_price || '0'),
+      p75_price: parseFloat(suggestion.p75_price || '0'),
+      price_range: `${suggestion.p25_price || 0}-${suggestion.p75_price || 0}kr`,
+      isSearchResult: true,
+      rankScore: rankScore,
+      color: color
+    }
+    includeTag(tag)
+    // Clear search field after adding tag
+    tagSearch.actions.clearSearch()
+    // Refocus input for next search (desktop only)
+    if (!isMobileDevice()) {
+      setTimeout(() => tagSearchComponentRef.current?.focus(), 0)
+    }
+  }, [includeTag, data?.stats?.estimate, query.includedTags, tagSearch.actions, isMobileDevice])
+
+  const handleTagExcludeFromSearch = useCallback((suggestion: TagSuggestion) => {
+    // Calculate score for new tag based on current estimate
+    const currentEstimate = parseFloat((data?.stats?.estimate || '0 kr').replace(/[^\d.]/g, '')) || 0
+    const medianPrice = parseFloat(suggestion.median_price || '0')
+
+    let rankScore: number | undefined = undefined
+    let color: string | undefined = undefined
+    if (currentEstimate > 0 && medianPrice > 0) {
+      rankScore = calculatePriceImpactScore(medianPrice, currentEstimate)
+      color = getScoreColor(rankScore)
+    }
+
+    const tag: Tag = {
+      name: suggestion.tag_name,
+      state: 'unselected',
+      listing_count: parseInt(suggestion.listing_count || '0'),
+      median_price: medianPrice,
+      p25_price: parseFloat(suggestion.p25_price || '0'),
+      p75_price: parseFloat(suggestion.p75_price || '0'),
+      price_range: `${suggestion.p25_price || 0}-${suggestion.p75_price || 0}kr`,
+      isSearchResult: true,
+      rankScore: rankScore,
+      color: color
+    }
+    excludeTag(tag)
+    // Clear search field after adding tag
+    tagSearch.actions.clearSearch()
+    // Refocus input for next search (desktop only)
+    if (!isMobileDevice()) {
+      setTimeout(() => tagSearchComponentRef.current?.focus(), 0)
+    }
+  }, [excludeTag, data?.stats?.estimate, query.includedTags, tagSearch.actions, isMobileDevice])
 
   // Debug logging for loading state
   console.log('🖥️ Page render - loading:', loading, 'data:', !!data, 'query.brand:', query.brand)
@@ -64,33 +163,31 @@ function HomePageContent() {
   // Clear detailed listings when query changes
   useEffect(() => {
     setDetailedListings({ data: null, loading: false, error: null })
-    setIsEstimateExpanded(false)
   }, [query])
 
-  // Helper function to calculate score for selected tags
-  const calculateTagScore = (tag: any, originalEstimate: number, otherSelectedTags: any[]) => {
-    const priceImpactScore = calculatePriceImpactScore(tag.median_price || 0, originalEstimate)
-    const similarityPenalty = calculateSimilarityPenalty(tag.name, otherSelectedTags)
-    return Math.max(-10, Math.min(10, priceImpactScore + similarityPenalty))
-  }
+  // Only close expanded view when brand changes, not when tags change
+  useEffect(() => {
+    setIsEstimateExpanded(false)
+    setPreservedStats(null) // Clear preserved stats when brand changes
+  }, [query.brand])
 
-  // Handle estimate panel expansion
-  const handleEstimateToggle = () => {
-    const willExpand = !isEstimateExpanded
-    setIsEstimateExpanded(willExpand)
 
-    // Auto-load detailed listings when opening expanded view
-    if (willExpand && detailedListings.data === null && !detailedListings.loading && query.brand) {
-      loadDetailedListings()
+  // Preserve stats when available to prevent black screen during reloads
+  useEffect(() => {
+    if (data?.stats) {
+      setPreservedStats(data.stats)
     }
+  }, [data?.stats])
+
+  // Get current stats for rendering (use preserved if current is null)
+  const currentStats = data?.stats || (isEstimateExpanded ? preservedStats : null)
+
+  // Helper function to calculate score for selected tags
+  const calculateTagScore = (tag: any, originalEstimate: number) => {
+    return calculatePriceImpactScore(tag.median_price || 0, originalEstimate)
   }
 
-  // Handle estimate panel sticky mode changes
-  const handleEstimateStickyModeChange = (mode: 'tags' | 'top') => {
-    setEstimateStickyMode(mode)
-  }
-
-  // Load detailed listings
+  // Load detailed listings function
   const loadDetailedListings = useCallback(async () => {
     if (!query.brand) return
 
@@ -120,6 +217,57 @@ function HomePageContent() {
     }
   }, [query.brand, query.includedTags, query.excludedTags])
 
+  // Handle estimate panel expansion
+  const handleEstimateToggle = () => {
+    const willExpand = !isEstimateExpanded
+    setIsEstimateExpanded(willExpand)
+
+    // Auto-load detailed listings when opening expanded view
+    if (willExpand && detailedListings.data === null && !detailedListings.loading && query.brand) {
+      loadDetailedListings()
+    }
+  }
+
+  // Handle estimate panel sticky mode changes
+  const handleEstimateStickyModeChange = (mode: 'tags' | 'top') => {
+    setEstimateStickyMode(mode)
+  }
+
+  // Auto-reload detailed listings when tags change while in expanded view
+  useEffect(() => {
+    if (isEstimateExpanded && query.brand && data?.stats) {
+      // Small delay to let the main data load first
+      const timeoutId = setTimeout(async () => {
+        if (!query.brand) return
+
+        setDetailedListings(prev => ({ ...prev, loading: true, error: null }))
+
+        try {
+          console.log('Auto-reloading detailed listings for:', query.brand, { selectedTags: query.includedTags, excludedTags: query.excludedTags })
+          const response = await apiClient.getDetailedListings(query.brand, {
+            selectedTags: query.includedTags,
+            excludedTags: query.excludedTags
+          })
+
+          setDetailedListings({
+            data: response.listings,
+            loading: false,
+            error: null
+          })
+
+          console.log('Auto-reloaded detailed listings:', response.listings.length)
+        } catch (error) {
+          console.error('Failed to auto-reload detailed listings:', error)
+          setDetailedListings({
+            data: null,
+            loading: false,
+            error: error instanceof Error ? error.message : 'Failed to load detailed listings'
+          })
+        }
+      }, 100)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [query.includedTags, query.excludedTags, isEstimateExpanded, query.brand, data?.stats])
 
   // Measure brand height dynamically
   useEffect(() => {
@@ -146,133 +294,91 @@ function HomePageContent() {
     }
   }, [query.brand, loading]) // Re-measure when brand changes
 
-  // Debounced API call for tag autocomplete
-  const debouncedFetchTagSuggestions = useCallback(
-    debounce(async (queryString: string) => {
-      if (!queryString.trim() || !query.brand) {
-        setTagSearchSuggestions([])
-        setIsPendingTagSuggestions(false)
-        return
-      }
+  // Old search logic has been moved to the unified useTagSearch hook
 
-      // Clear pending state when debounce completes and API call starts
-      setIsPendingTagSuggestions(false)
-      setIsLoadingTagSuggestions(true)
-      try {
-        const results = await apiClient.getTagSuggestions(queryString, query.brand, query.includedTags, query.excludedTags)
-        setTagSearchSuggestions(results)
-      } catch (error) {
-        console.error('Failed to fetch tag suggestions:', error)
-        setTagSearchSuggestions([])
-      } finally {
-        setIsLoadingTagSuggestions(false)
-      }
-    }, 50),
-    [query.brand, query.includedTags, query.excludedTags]
-  )
+  // Old tag conversion and handlers have been moved to the unified useTagSearch hook
 
-  // Handle tag search query changes
-  const handleTagSearchQueryChange = useCallback((newQuery: string) => {
-    setTagSearchQuery(newQuery)
-
-    // Set pending state immediately if user is typing meaningful input
-    if (newQuery.trim()) {
-      setIsPendingTagSuggestions(true)
-    } else {
-      setIsPendingTagSuggestions(false)
-    }
-
-    debouncedFetchTagSuggestions(newQuery)
-  }, [debouncedFetchTagSuggestions])
-
-  // Helper function to convert TagSuggestion to Tag
-  const suggestionToTag = useCallback((suggestion: TagSuggestion): Tag => ({
-    name: suggestion.name,
-    state: 'unselected' as const,
-    listing_count: suggestion.listing_count,
-    price_range: `${suggestion.listing_count} listings`,
-  }), [])
-
-  // Handle tag include from search
-  const handleTagInclude = useCallback((suggestion: TagSuggestion) => {
-    const tag = suggestionToTag(suggestion)
-    includeTag(tag)
-  }, [includeTag, suggestionToTag])
-
-  // Handle tag exclude from search
-  const handleTagExclude = useCallback((suggestion: TagSuggestion) => {
-    const tag = suggestionToTag(suggestion)
-    excludeTag(tag)
-    // Clear search after selection and focus input for more searching
-    setTagSearchQuery('')
-    setTagSearchSuggestions([])
-    setSelectedResultIndex(-1)
-    // Focus tag search for continued searching
-    setTimeout(() => {
-      tagSearchComponentRef.current?.focus()
-    }, 0)
-  }, [excludeTag, suggestionToTag])
-
-  // Update include handler to also clear search and focus
-  const handleTagIncludeUpdated = useCallback((suggestion: TagSuggestion) => {
-    const tag = suggestionToTag(suggestion)
-    includeTag(tag)
-    // Clear search after selection and focus input for more searching
-    setTagSearchQuery('')
-    setTagSearchSuggestions([])
-    setSelectedResultIndex(-1)
-    // Focus tag search for continued searching
-    setTimeout(() => {
-      tagSearchComponentRef.current?.focus()
-    }, 0)
-  }, [includeTag, suggestionToTag])
-
-  // Focus tag search when brand is selected
+  // Focus tag search when brand is selected (desktop only)
   useEffect(() => {
-    if (query.brand && tagSearchComponentRef.current) {
+    if (query.brand && tagSearchComponentRef.current && !isMobileDevice()) {
       setTimeout(() => {
         tagSearchComponentRef.current?.focus()
       }, 100) // Small delay to ensure component is mounted
     }
-  }, [query.brand])
+  }, [query.brand, isMobileDevice])
 
-  // Handle keyboard navigation for search results
-  const handleTagSearchKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const visibleSuggestions = tagSearchSuggestions.slice(0, 3)
+  // Create merged tag list combining search results with main tag list
+  const mergedTagList = useMemo(() => {
+    if (!query.brand) return []
 
-    if (visibleSuggestions.length === 0) return
+    // If no main data loaded yet, return empty (show loading)
+    if (!data?.tags) return []
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault()
-        setSelectedResultIndex(prev =>
-          prev < visibleSuggestions.length - 1 ? prev + 1 : 0
-        )
-        break
-      case 'ArrowUp':
-        e.preventDefault()
-        setSelectedResultIndex(prev =>
-          prev > 0 ? prev - 1 : visibleSuggestions.length - 1
-        )
-        break
-      case 'Enter':
-        e.preventDefault()
-        if (selectedResultIndex >= 0 && selectedResultIndex < visibleSuggestions.length) {
-          handleTagIncludeUpdated(visibleSuggestions[selectedResultIndex])
-        }
-        break
-      case 'Escape':
-        setSelectedResultIndex(-1)
-        setTagSearchSuggestions([])
-        setTagSearchQuery('')
-        break
+    // Get filtered and ranked main tag list
+    const mainTagList = rankTags(
+      data.tags.filter(tag => tag.state === 'unselected'),
+      query.includedTags,
+      data.stats?.estimate || '0 kr',
+      undefined,
+      'listing_count' // Use listing count for main list to maintain current behavior
+    )
+
+    // Get ranked search suggestions from unified hook
+    const rankedSearchTags = tagSearch.rankedSuggestions
+    const isSearchActive = tagSearch.state.query.trim().length > 0
+
+    // If user is not searching, just return main tags
+    if (!isSearchActive) {
+      return mainTagList.map(tag => ({ ...tag, isSearchResult: false }))
     }
-  }, [tagSearchSuggestions, selectedResultIndex, handleTagIncludeUpdated])
 
-  // Reset selected index when suggestions change
-  useEffect(() => {
-    setSelectedResultIndex(-1)
-  }, [tagSearchSuggestions])
+    // If user is searching, merge search results with main tags
+    const mergedTags: Tag[] = []
+    const addedTagNames = new Set<string>()
+
+    // Add ranked search results first
+    rankedSearchTags.forEach(tag => {
+      // Try to find matching tag in main list for better data
+      const mainListMatch = mainTagList.find(mainTag =>
+        mainTag.name.toLowerCase() === tag.name.toLowerCase()
+      )
+
+      if (mainListMatch && mainListMatch.median_price && tag.median_price && mainListMatch.median_price > tag.median_price) {
+        // Use main list data if it has more complete/better price data, but mark as search result
+        mergedTags.push({
+          ...mainListMatch,
+          isSearchResult: true
+        })
+      } else {
+        // Use search result data (already transformed and ranked)
+        mergedTags.push(tag)
+      }
+
+      addedTagNames.add(tag.name.toLowerCase())
+    })
+
+    // Add remaining main list tags (excluding duplicates)
+    mainTagList.forEach(tag => {
+      if (!addedTagNames.has(tag.name.toLowerCase())) {
+        mergedTags.push({ ...tag, isSearchResult: false })
+      }
+    })
+
+    return mergedTags
+  }, [data?.tags, query.brand, query.includedTags, tagSearch.rankedSuggestions, tagSearch.state.query, data?.stats?.estimate])
+
+  // Combined loading state - show loading until both main data and search suggestions are ready
+  const isCombinedLoading = useMemo(() => {
+    // If user is searching and we have a brand
+    if (tagSearch.state.query.trim() && query.brand) {
+      // Show loading if main data is loading OR tag suggestions are loading/pending
+      return loading || tagSearch.isCombinedLoading
+    }
+    // If not searching, just show main data loading
+    return loading
+  }, [loading, tagSearch.isCombinedLoading, tagSearch.state.query, query.brand])
+
+  // Use unified keyboard navigation from hook (handles all keyboard logic internally)
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden bg-brand-dark">
@@ -283,6 +389,7 @@ function HomePageContent() {
             {/* Unified Brand Component */}
             <div ref={brandRef} className="sticky top-0 z-20">
               <BrandSearch
+                ref={brandSearchComponentRef}
                 loading={loading}
                 brand={query.brand}
                 setBrand={setBrand}
@@ -290,165 +397,152 @@ function HomePageContent() {
               />
             </div>
 
-            {/* Selected Tags - Sticky below brand */}
+            {/* Selected Tags - Scrollable below brand in chronological order */}
             {(query.includedTags.length > 0 || query.excludedTags.length > 0) && (
               <div
                 ref={selectedTagsRef}
-                className="sticky bg-brand-darker z-15"
-                style={{ top: `${brandHeight}px` }}
+                className="bg-brand-darker"
               >
-                {query.includedTags.map(tag => {
-                  // Calculate score for this selected tag using current estimate baseline
-                  const currentEstimate = parseFloat((data?.stats?.estimate || '0 kr').replace(/[^\d.]/g, '')) || 0
-                  const otherSelectedTags = query.includedTags.filter(t => t.name !== tag.name)
-                  const tagScore = currentEstimate > 0 ? calculateTagScore(tag, currentEstimate, otherSelectedTags) : undefined
+                {/* Create unified chronological list of all selected tags */}
+                {[...query.includedTags, ...query.excludedTags]
+                  .sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0)) // Sort by timestamp
+                  .map(tag => {
+                    // Use stored score if available, otherwise calculate score using current estimate baseline
+                    let tagScore = tag.rankScore
+
+                    if (tagScore === undefined) {
+                      const currentEstimate = parseFloat((data?.stats?.estimate || '0 kr').replace(/[^\d.]/g, '')) || 0
+                      tagScore = currentEstimate > 0 ? calculateTagScore(tag, currentEstimate) : undefined
+                      // Update color based on calculated score
+                      if (tagScore !== undefined) {
+                        tag.color = getScoreColor(tagScore)
+                      }
+                    }
+
+                    const isIncluded = tag.state === 'included'
+                    const isExcluded = tag.state === 'excluded'
+
+                    return (
+                      <StackItem
+                        key={`${tag.state}-${tag.name}`}
+                        variant={isIncluded ? "selected-included" : "selected-excluded"}
+                        content={tag.name}
+                        details={formatTagDisplay(tag, tagScore)}
+                        className={tag.color}
+                        onClick={() => isIncluded ? unselectTag(tag) : includeTag(tag)}
+                        actions={[
+                          {
+                            type: 'include',
+                            onClick: () => isIncluded ? unselectTag(tag) : includeTag(tag),
+                            title: isIncluded ? `Unselect ${tag.name}` : `Include ${tag.name}`,
+                            active: isIncluded
+                          },
+                          {
+                            type: 'exclude',
+                            onClick: () => isExcluded ? unselectTag(tag) : excludeTag(tag),
+                            title: isExcluded ? `Unselect ${tag.name}` : `Exclude ${tag.name}`,
+                            active: isExcluded
+                          }
+                        ]}
+                      />
+                    )
+                  })}
+              </div>
+            )}
+
+            {/* Tag Search - Sticky below brand */}
+            {query.brand && (
+              <div ref={tagSearchRef} className="sticky z-10" style={{ top: `${brandHeight}px` }}>
+                <TagSearch
+                  ref={tagSearchComponentRef}
+                  brand={query.brand}
+                  selectedTags={query.includedTags}
+                  excludedTags={query.excludedTags}
+                  onTagInclude={handleTagIncludeFromSearch}
+                  onTagExclude={handleTagExcludeFromSearch}
+                  searchQuery={tagSearch.state.query}
+                  onSearchQueryChange={tagSearch.actions.setQuery}
+                  suggestions={tagSearch.state.suggestions}
+                  isLoadingSuggestions={tagSearch.isCombinedLoading}
+                  onKeyDown={tagSearch.actions.handleKeyDown}
+                />
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="pt-32 px-15pt">
+                <div className="p-15pt text-red-400 bg-red-900 bg-opacity-20 rounded-md">
+                  <p className="text-18pt font-300">Error loading data:</p>
+                  <p className="text-11pt font-300 mt-8pt">{error}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Loading state for main tag fetching */}
+            {isCombinedLoading && query.brand && (
+              <div className="py-12pt px-12pt">
+                <div className="text-text-secondary text-14pt">
+                  Loading tags...
+                </div>
+              </div>
+            )}
+
+            {/* Unified Tag List - Merged search results and main tags */}
+            {!isCombinedLoading && mergedTagList.length > 0 && (
+              <div>
+                {mergedTagList.map((tag, index) => {
+                  // Check if this tag is from search results
+                  const isSearchResult = tag.isSearchResult
+
+                  // Click handlers use direct tag inclusion/exclusion
+                  const handleClick = () => {
+                    includeTag(tag)
+                    // Clear search only if this was a search result tag
+                    if (tag.isSearchResult) {
+                      tagSearch.actions.clearSearch()
+                    }
+                    // Refocus for next search (desktop only)
+                    if (!isMobileDevice()) {
+                      setTimeout(() => tagSearchComponentRef.current?.focus(), 0)
+                    }
+                  }
+
+                  const handleExcludeClick = () => {
+                    excludeTag(tag)
+                    // Clear search only if this was a search result tag
+                    if (tag.isSearchResult) {
+                      tagSearch.actions.clearSearch()
+                    }
+                    // Refocus for next search (desktop only)
+                    if (!isMobileDevice()) {
+                      setTimeout(() => tagSearchComponentRef.current?.focus(), 0)
+                    }
+                  }
 
                   return (
                     <StackItem
-                      key={`selected-${tag.name}`}
-                      variant="selected-included"
+                      key={`merged-${tag.name}-${index}`}
+                      variant="unselected"
                       content={tag.name}
-                      details={formatTagDisplay(tag, tagScore)}
-                      className={tag.color}
-                      onClick={() => unselectTag(tag)}
+                      details={formatTagDisplay(tag, tag.rankScore)}
+                      className={tag.color || ''}
+                      onClick={handleClick}
                       actions={[
                         {
                           type: 'include',
-                          onClick: () => unselectTag(tag),
-                          title: `Unselect ${tag.name}`,
-                          active: true
+                          onClick: handleClick,
+                          title: `Include ${tag.name}`
                         },
                         {
                           type: 'exclude',
-                          onClick: () => excludeTag(tag),
+                          onClick: handleExcludeClick,
                           title: `Exclude ${tag.name}`
                         }
                       ]}
                     />
                   )
                 })}
-
-                {query.excludedTags.map(tag => {
-                  // Calculate score for this excluded tag using current estimate baseline
-                  const currentEstimate = parseFloat((data?.stats?.estimate || '0 kr').replace(/[^\d.]/g, '')) || 0
-                  const otherSelectedTags = query.includedTags // Exclude tags don't count each other for similarity
-                  const tagScore = currentEstimate > 0 ? calculateTagScore(tag, currentEstimate, otherSelectedTags) : undefined
-
-                  return (
-                    <StackItem
-                      key={`excluded-${tag.name}`}
-                      variant="selected-excluded"
-                      content={tag.name}
-                      details={formatTagDisplay(tag, tagScore)}
-                      className={tag.color}
-                      onClick={() => includeTag(tag)}
-                      actions={[
-                        {
-                          type: 'include',
-                          onClick: () => includeTag(tag),
-                          title: `Include ${tag.name}`
-                        },
-                        {
-                          type: 'exclude',
-                          onClick: () => unselectTag(tag),
-                          title: `Unselect ${tag.name}`,
-                          active: true
-                        }
-                      ]}
-                    />
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Tag Search - Sticky below selected tags */}
-            {query.brand && (
-              <div ref={tagSearchRef} className="sticky z-10" style={{ top: `${brandHeight + selectedTagsHeight}px` }}>
-                <TagSearch
-                  ref={tagSearchComponentRef}
-                  brand={query.brand}
-                  selectedTags={query.includedTags}
-                  excludedTags={query.excludedTags}
-                  onTagInclude={handleTagIncludeUpdated}
-                  onTagExclude={handleTagExclude}
-                  searchQuery={tagSearchQuery}
-                  onSearchQueryChange={handleTagSearchQueryChange}
-                  suggestions={tagSearchSuggestions}
-                  isLoadingSuggestions={isLoadingTagSuggestions}
-                  onKeyDown={handleTagSearchKeyDown}
-                />
-              </div>
-            )}
-
-            {/* Tag Search Results - Inline below tag search */}
-            {query.brand && tagSearchSuggestions.length > 0 && (
-              <div>
-                {tagSearchSuggestions.slice(0, 3).map((suggestion, index) => (
-                  <StackItem
-                    key={suggestion.name}
-                    variant="unselected"
-                    content={suggestion.name}
-                    details={`${suggestion.listing_count} listings`}
-                    onClick={() => handleTagIncludeUpdated(suggestion)}
-                    className={index === selectedResultIndex ? 'bg-brand-darker' : ''}
-                    actions={[
-                      {
-                        type: 'include',
-                        onClick: () => handleTagIncludeUpdated(suggestion),
-                        title: `Include ${suggestion.name}`
-                      },
-                      {
-                        type: 'exclude',
-                        onClick: () => handleTagExclude(suggestion),
-                        title: `Exclude ${suggestion.name}`
-                      }
-                    ]}
-                  />
-                ))}
-              </div>
-            )}
-
-      {/* Error State */}
-      {error && (
-        <div className="pt-32 px-15pt">
-          <div className="p-15pt text-red-400 bg-red-900 bg-opacity-20 rounded-md">
-            <p className="text-18pt font-300">Error loading data:</p>
-            <p className="text-11pt font-300 mt-8pt">{error}</p>
-          </div>
-        </div>
-      )}
-
-            {/* Unselected Tags - Scrollable */}
-            {!loading && data && data.tags && (
-              <div>
-          {rankTags(
-              data.tags.filter(tag => tag.state === 'unselected'),
-              query.includedTags,
-              data.stats?.estimate || '0 kr',
-              undefined,
-              'listing_count'
-            ).map(tag => (
-              <StackItem
-                key={`unselected-${tag.name}`}
-                variant="unselected"
-                content={tag.name}
-                details={tag.price_range}
-                className={tag.color}
-                onClick={() => includeTag(tag)}
-                actions={[
-                  {
-                    type: 'include',
-                    onClick: () => includeTag(tag),
-                    title: `Include ${tag.name}`
-                  },
-                  {
-                    type: 'exclude',
-                    onClick: () => excludeTag(tag),
-                    title: `Exclude ${tag.name}`
-                  }
-                ]}
-              />
-            ))}
               </div>
             )}
 
@@ -463,7 +557,7 @@ function HomePageContent() {
           </div>
 
           {/* Footer Section - Estimate */}
-          {data?.stats && (
+          {currentStats && (
             <div className="flex-shrink-0 group">
               {/* Estimate section header with aligned action */}
               <SectionTitle
@@ -480,8 +574,8 @@ function HomePageContent() {
               <div>
                 <StackItem
                   variant="estimate"
-                  content={data.stats.estimate}
-                  details={`${data.stats.estimateRange} • ${data.listingsCount.toLocaleString('nb-NO')} listings`}
+                  content={currentStats.estimate}
+                  details={`${currentStats.estimateRange} • ${data?.listingsCount?.toLocaleString('nb-NO') || 0} listings`}
                   onClick={handleEstimateToggle}
                 />
               </div>
@@ -489,7 +583,7 @@ function HomePageContent() {
           )}
         </>
       ) : (
-        data?.stats && (
+        currentStats && (
           <ExpandedDetailsView
                 brand={query.brand || ''}
                 onClearBrand={clearBrand}
@@ -498,13 +592,21 @@ function HomePageContent() {
                 onUnselectTag={unselectTag}
                 onIncludeTag={includeTag}
                 onExcludeTag={excludeTag}
-                stats={data.stats}
-                listingsCount={data.listingsCount}
+                stats={currentStats}
+                listingsCount={data?.listingsCount || 0}
                 listings={detailedListings.data || []}
                 detailedListingsLoading={detailedListings.loading}
                 detailedListingsError={detailedListings.error}
                 onLoadDetailedListings={loadDetailedListings}
                 onClose={handleEstimateToggle}
+                // Tag search props
+                tagSearchQuery={tagSearch.state.query}
+                onTagSearchQueryChange={tagSearch.actions.setQuery}
+                tagSearchSuggestions={tagSearch.state.suggestions}
+                isLoadingTagSuggestions={tagSearch.isCombinedLoading}
+                onTagInclude={handleTagIncludeFromSearch}
+                onTagExclude={handleTagExcludeFromSearch}
+                onTagSearchKeyDown={tagSearch.actions.handleKeyDown}
               />
         )
       )}
@@ -512,20 +614,6 @@ function HomePageContent() {
   )
 }
 
-// Debounce utility function
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null
-
-  return (...args: Parameters<T>) => {
-    if (timeout) {
-      clearTimeout(timeout)
-    }
-    timeout = setTimeout(() => func(...args), wait)
-  }
-}
 
 export default function HomePage() {
   return (

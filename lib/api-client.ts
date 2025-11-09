@@ -113,8 +113,16 @@ class ApiClient {
 
     const rawData = await this.request('/brands/autocomplete', requestData)
 
-    // API returns array of BrandSuggestion objects directly
-    return rawData || []
+    // Transform API response to match BrandSuggestion interface
+    return rawData?.map((item: any) => ({
+      brand: item.brand,
+      listing_count: item.listing_count,
+      p25_price: item.p25_price,
+      p75_price: item.p75_price,
+      median_price: item.median_price,
+      average_price: item.average_price,
+      volume: item.volume
+    })) || []
   }
 
   /**
@@ -143,11 +151,16 @@ class ApiClient {
 
     const rawData = await this.request('/get-tags-autocomplete', requestData)
 
-    // Simple mapping from API response
-    return rawData?.map((tag: any) => ({
-      name: tag.tag_name,
-      listing_count: parseInt(tag.listing_count)
-    })).filter((tag: TagSuggestion) => tag.name) || []
+    // Transform API response to match TagSuggestion interface
+    return rawData?.map((item: any) => ({
+      tag_name: item.tag_name,
+      listing_count: item.listing_count,
+      p25_price: item.p25_price,
+      p75_price: item.p75_price,
+      median_price: item.median_price,
+      average_price: item.average_price,
+      volume: item.volume
+    })).filter((tag: TagSuggestion) => tag.tag_name) || []
   }
 
   /**

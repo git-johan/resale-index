@@ -1,9 +1,13 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { StackItem } from './StackItem'
 import { apiClient } from '@/lib/api-client'
 import { BrandSuggestion } from '@/lib/types'
+
+export interface BrandSearchRef {
+  focus: () => void
+}
 
 interface BrandSearchProps {
   loading?: boolean
@@ -12,12 +16,12 @@ interface BrandSearchProps {
   clearBrand: () => void
 }
 
-export function BrandSearch({
+export const BrandSearch = forwardRef<BrandSearchRef, BrandSearchProps>(function BrandSearch({
   loading = false,
   brand,
   setBrand,
   clearBrand
-}: BrandSearchProps) {
+}, ref) {
   // Derive brandSearchActive from props - simple!
   const brandSearchActive = brand === null
 
@@ -29,12 +33,18 @@ export function BrandSearch({
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
   const [isPendingSuggestions, setIsPendingSuggestions] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
-  const [selectedIndex, setSelectedIndex] = useState(-1)
 
   // Refs
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Expose focus method to parent
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus()
+    }
+  }))
 
   // Debounced API call for autocomplete
   const debouncedFetchSuggestions = useCallback(
@@ -61,7 +71,7 @@ export function BrandSearch({
       } finally {
         setIsLoadingSuggestions(false)
       }
-    }, 50),
+    }, 200),
     []
   )
 
@@ -69,7 +79,6 @@ export function BrandSearch({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setInputValue(value)
-    setSelectedIndex(-1)
 
     // Set pending state immediately if user is typing meaningful input
     if (value.trim()) {
@@ -90,14 +99,8 @@ export function BrandSearch({
       return
     }
 
-    // If we have a specific selection, use it
-    if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-      handleSuggestionSelect(suggestions[selectedIndex])
-      return
-    }
-
-    // Otherwise, only allow submission if input matches an existing suggestion exactly
-    const exactMatch = suggestions.find(s => s.name.toLowerCase() === inputValue.trim().toLowerCase())
+    // Only allow submission if input matches an existing suggestion exactly
+    const exactMatch = suggestions.find(s => s.brand.toLowerCase() === inputValue.trim().toLowerCase())
     if (exactMatch) {
       handleSuggestionSelect(exactMatch)
     }
@@ -106,49 +109,18 @@ export function BrandSearch({
 
   // Handle suggestion selection
   const handleSuggestionSelect = (suggestion: BrandSuggestion) => {
-    setBrand(suggestion.name)
+    setBrand(suggestion.brand)
     setInputValue('')
     setShowDropdown(false)
   }
 
-  // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown || suggestions.length === 0) {
-      // Allow form submission via Enter even if no dropdown
-      return
-    }
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault()
-        setSelectedIndex(prev =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        )
-        break
-      case 'ArrowUp':
-        e.preventDefault()
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1)
-        break
-      case 'Enter':
-        e.preventDefault()
-        // Don't handle Enter here - let the form submission handle it
-        // This ensures consistent behavior between Enter key and form submit
-        handleSubmit(e as any)
-        break
-      case 'Escape':
-        setShowDropdown(false)
-        setSelectedIndex(-1)
-        break
-    }
-  }
 
   // Handle input blur
   const handleInputBlur = () => {
     // Delay hiding dropdown to allow for clicks
     setTimeout(() => {
       setShowDropdown(false)
-      setSelectedIndex(-1)
-    }, 150)
+      }, 150)
   }
 
   // Handle brand click (to edit)
@@ -172,7 +144,7 @@ export function BrandSearch({
       {brandSearchActive ? (
         // Input State: Search with autocomplete
         <div className="relative">
-          <form onSubmit={handleSubmit} className="border-b border-border-subtle bg-brand-darker">
+          <form onSubmit={handleSubmit} className="border-t border-b border-border-subtle bg-brand-darker">
             <div className="py-8pt px-12pt flex justify-between items-start font-sf-pro w-full">
               <div className="flex flex-col gap-0 flex-1 min-w-0">
                 <input
@@ -180,11 +152,10 @@ export function BrandSearch({
                   type="text"
                   value={inputValue}
                   onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
                   onBlur={handleInputBlur}
                   onFocus={handleInputFocus}
                   placeholder="enter brand"
-                  className={`text-20pt font-bold bg-transparent border-none outline-none placeholder-text-secondary leading-1.2 m-0 w-full ${
+                  className={`text-20pt font-normal bg-transparent border-none outline-none placeholder-text-secondary leading-1.2 m-0 w-full ${
                     (isPendingSuggestions || isLoadingSuggestions)
                       ? 'text-text-secondary cursor-wait'
                       : 'text-text-primary'
@@ -193,8 +164,8 @@ export function BrandSearch({
                 />
               </div>
               {(isPendingSuggestions || isLoadingSuggestions) && (
-                <div className="text-10pt font-normal text-text-secondary flex-shrink-0 ml-15pt">
-                  {isPendingSuggestions ? 'Searching...' : 'Loading...'}
+                <div className="text-10pt font-normal text-text-primary flex-shrink-0 ml-15pt self-center">
+                  Searching
                 </div>
               )}
             </div>
@@ -208,22 +179,17 @@ export function BrandSearch({
             >
               {suggestions.map((suggestion, index) => (
                 <div
-                  key={suggestion.name}
-                  className={`py-8pt px-12pt flex justify-between items-center font-sf-pro w-full text-20pt font-medium transition-colors duration-200 cursor-pointer ${
-                    index === selectedIndex
-                      ? 'bg-black text-text-primary'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-black'
-                  }`}
+                  key={suggestion.brand}
+                  className="py-8pt px-12pt flex justify-between items-center font-sf-pro w-full text-20pt transition-colors duration-200 cursor-pointer font-normal text-text-secondary hover:font-semibold hover:text-text-primary hover:bg-black"
                   onClick={() => handleSuggestionSelect(suggestion)}
-                  onMouseEnter={() => setSelectedIndex(index)}
                 >
                   <div className="flex items-center gap-10pt flex-1 min-w-0">
                     <h3 className="leading-1.2 m-0">
-                      {suggestion.name}
+                      {suggestion.brand}
                     </h3>
                     <div className="flex flex-col items-start text-left">
                       <div className="text-10pt font-light leading-1.2 text-text-secondary">
-                        {suggestion.listing_count.toLocaleString()} listings
+                        {parseInt(suggestion.listing_count || '0').toLocaleString()} listings
                       </div>
                     </div>
                   </div>
@@ -264,7 +230,7 @@ export function BrandSearch({
       )}
     </div>
   )
-}
+})
 
 // Debounce utility function
 function debounce<T extends (...args: any[]) => any>(

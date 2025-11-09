@@ -50,11 +50,19 @@ module.exports = {
         'text-secondary': '#787878',
         'text-primary': '#ffffff',
         'border-subtle': '#2c2c2c',
+        'exclusion-bg': '#470000',
       },
       lineHeight: {
         '1.1': '1.1',
         '1.2': '1.2',
         '1.3': '1.3',
+      },
+      fontWeight: {
+        light: '300',
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
       }
     },
   },

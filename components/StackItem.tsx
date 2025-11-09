@@ -26,18 +26,30 @@ export function StackItem({
   // 8 variants including the new brand-searching state and subtitle
   const variantClasses = {
     'brand-search': 'text-20pt font-medium text-text-primary border-b border-border-subtle bg-brand-darker',
-    'brand': 'text-20pt font-bold text-text-primary border-b border-border-subtle bg-brand-darker',
+    'brand': 'text-20pt font-semibold text-text-primary border-b border-border-subtle bg-brand-darker',
     'brand-searching': 'text-20pt font-medium text-text-primary bg-brand-darker',
     'selected-included': 'text-20pt font-medium text-text-primary bg-brand-darker',
-    'selected-excluded': 'text-20pt font-medium text-text-primary bg-brand-darker',
+    'selected-excluded': 'text-20pt font-medium text-text-primary bg-exclusion-bg',
     'unselected': 'text-20pt font-medium text-text-secondary',
     'estimate': 'text-20pt font-bold text-text-primary bg-brand-darker',
     'subtitle': 'text-10pt font-light text-text-secondary'
   }
 
+  // Different hover states for different variants
+  const getHoverClass = () => {
+    if (!onClick) return ''
+
+    switch (variant) {
+      case 'unselected':
+        return 'cursor-pointer hover:text-white transition-colors duration-200'
+      default:
+        return 'cursor-pointer hover:text-text-primary transition-colors duration-200'
+    }
+  }
+
   return (
     <div
-      className={`${variant === 'subtitle' ? 'pt-5pt pb-0' : 'py-8pt'} px-12pt flex justify-between items-center font-sf-pro w-full ${variantClasses[variant]} ${className} ${onClick ? 'cursor-pointer hover:text-text-primary transition-colors duration-200' : ''}`}
+      className={`${variant === 'subtitle' ? 'pt-5pt pb-0' : 'py-8pt'} px-12pt flex justify-between items-center font-sf-pro w-full ${variantClasses[variant]} ${className} ${getHoverClass()}`}
       onClick={onClick}
     >
       <div className="flex items-center gap-10pt flex-1 min-w-0">
@@ -69,10 +81,10 @@ export function StackItem({
 
               return (
                 <>
-                  {/* Hide score for selected tags */}
-                  {score && variant !== 'selected-included' && variant !== 'selected-excluded' && (
+                  {/* Show score for all tags */}
+                  {score && (
                     <div className={`text-10pt font-light leading-1.2 ${
-                      variant === 'estimate' ? 'text-text-secondary' : (className || 'text-green-500')
+                      variant === 'estimate' ? 'text-text-secondary' : (className || 'text-gray-500')
                     }`}>
                       {score}
                     </div>

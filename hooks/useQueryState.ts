@@ -133,7 +133,16 @@ export function useQueryState(): UseQueryStateReturn {
     console.log('➕ Including tag:', tag.name)
     setQuery(prev => ({
       ...prev,
-      includedTags: [...prev.includedTags.filter(t => t.name !== tag.name), { ...tag, state: 'included' }],
+      includedTags: [...prev.includedTags.filter(t => t.name !== tag.name), {
+        ...tag,
+        state: 'included',
+        // Preserve rank/stats identifier and related fields
+        rankScore: tag.rankScore,
+        priceImpactPercentage: tag.priceImpactPercentage,
+        color: tag.color,
+        // Add timestamp for chronological ordering
+        addedAt: Date.now()
+      }],
       excludedTags: prev.excludedTags.filter(t => t.name !== tag.name)  // Remove from excluded
     }))
   }, [])
@@ -142,7 +151,16 @@ export function useQueryState(): UseQueryStateReturn {
     console.log('➖ Excluding tag:', tag.name)
     setQuery(prev => ({
       ...prev,
-      excludedTags: [...prev.excludedTags.filter(t => t.name !== tag.name), { ...tag, state: 'excluded' }],
+      excludedTags: [...prev.excludedTags.filter(t => t.name !== tag.name), {
+        ...tag,
+        state: 'excluded',
+        // Preserve rank/stats identifier and related fields
+        rankScore: tag.rankScore,
+        priceImpactPercentage: tag.priceImpactPercentage,
+        color: tag.color,
+        // Add timestamp for chronological ordering
+        addedAt: Date.now()
+      }],
       includedTags: prev.includedTags.filter(t => t.name !== tag.name)  // Remove from included
     }))
   }, [])

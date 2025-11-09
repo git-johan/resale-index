@@ -45,6 +45,21 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
     }
   }))
 
+  // Auto-focus the input when component mounts and brand is available (desktop only)
+  useEffect(() => {
+    if (brand && inputRef.current) {
+      // Check if device is mobile - prevent auto-focus on mobile to avoid keyboard popup
+      const isMobile = typeof window !== 'undefined' && (
+        window.matchMedia('(max-width: 768px)').matches ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      )
+
+      if (!isMobile) {
+        inputRef.current.focus()
+      }
+    }
+  }, [brand])
+
   // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -54,6 +69,12 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
   // Handle form submission (prevent default but don't do anything special)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // If we have search text and suggestions, select first one
+    if (searchQuery.trim() && suggestions.length > 0) {
+      const firstSuggestion = suggestions[0]
+      onTagInclude(firstSuggestion)
+      onSearchQueryChange('') // Clear search
+    }
   }
 
   // Don't render if no brand selected
@@ -61,13 +82,10 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
     return null
   }
 
-  // Determine status text
-  const statusText = isLoadingSuggestions ? 'Loading...' : ''
-
   return (
     <div className="relative">
       {/* Search Input */}
-      <form onSubmit={handleSubmit} className="border-b border-border-subtle">
+      <form onSubmit={handleSubmit} className="border-t border-b border-border-subtle bg-brand-darker">
         <div className="py-8pt px-12pt flex justify-between items-start font-sf-pro w-full">
           <div className="flex flex-col gap-0 flex-1 min-w-0">
             <input
@@ -77,14 +95,14 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
               onChange={handleInputChange}
               onKeyDown={onKeyDown}
               placeholder="search tags..."
-              className="text-20pt font-medium text-text-primary bg-transparent border-none outline-none placeholder-text-secondary leading-1.2 m-0 w-full"
+              className="text-20pt font-medium text-text-primary bg-transparent border-none outline-none placeholder-text-secondary placeholder:font-light leading-1.2 m-0 w-full"
             />
-            {statusText && (
-              <span className="text-10pt font-light text-text-secondary leading-1.2">
-                {statusText}
-              </span>
-            )}
           </div>
+          {isLoadingSuggestions && (
+            <div className="text-10pt font-normal text-text-primary flex-shrink-0 ml-15pt self-center">
+              Searching
+            </div>
+          )}
         </div>
       </form>
     </div>

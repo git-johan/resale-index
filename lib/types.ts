@@ -40,6 +40,13 @@ export interface Tag {
   p25_price?: number
   p75_price?: number
   color?: string
+  // Indicates if this tag came from search results (for styling/navigation)
+  isSearchResult?: boolean
+  // Rank/stats identifier - preserved through state transitions
+  rankScore?: number
+  priceImpactPercentage?: number
+  // Timestamp for chronological ordering - when tag was added/selected
+  addedAt?: number
 }
 
 export interface Listing {
@@ -56,13 +63,23 @@ export interface Listing {
 }
 
 export interface BrandSuggestion {
-  name: string
-  listing_count: number
+  brand: string
+  listing_count: string
+  p25_price: string
+  p75_price: string
+  median_price: string
+  average_price: string
+  volume: string
 }
 
 export interface TagSuggestion {
-  name: string
-  listing_count: number
+  tag_name: string
+  listing_count: string
+  p25_price: string
+  p75_price: string
+  median_price: string
+  average_price: string
+  volume: string
 }
 
 export interface BrandData {
