@@ -127,7 +127,7 @@ export function ExpandedDetailsView({
   return (
     <div className="fixed inset-0 z-50 bg-brand-dark overflow-y-auto">
       {/* All Content Flows Together - No Fixed Headers */}
-      <div>
+      <div className="min-h-[200vh]">
         {/* Header with T Symbol and Text - Same as main page */}
         <div className="py-8pt px-12pt flex items-center font-sf-pro w-full text-24pt font-semibold bg-brand-dark border-b border-border-subtle" style={{color: 'rgba(232, 232, 232, 0.8)'}}>
           <div className="flex items-center gap-10pt">
@@ -298,7 +298,7 @@ export function ExpandedDetailsView({
         </div>
 
         {/* Details Content Section */}
-        <div className="space-y-0 min-h-[600px]">
+        <div className="space-y-0 min-h-[100vh]">
         {/* Price Analysis Section */}
         <div className="bg-brand-darker px-12pt py-8pt">
           <div className="mb-8pt flex items-center gap-10pt">
