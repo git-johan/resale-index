@@ -288,7 +288,12 @@ export function ExpandedDetailsView({
         <div className="space-y-0">
         {/* Price Analysis Section */}
         <div className="bg-brand-darker px-12pt py-8pt">
-          <h4 className="text-20pt font-normal text-text-secondary mb-8pt">price trend</h4>
+          <div className="mb-8pt flex items-center gap-10pt">
+            <h4 className="text-20pt font-normal text-text-secondary">price trend</h4>
+            <div className="text-10pt font-light leading-1.2 text-text-secondary">
+              last 365 days
+            </div>
+          </div>
 
           {/* Price Distribution Chart */}
           {listings.length > 0 ? (
@@ -330,16 +335,16 @@ export function ExpandedDetailsView({
               {/* Table Header */}
               <thead>
                 <tr className="border-b border-border-subtle">
-                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[220px]">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary">
                     Title
                   </th>
-                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[80px]">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary">
                     Price
                   </th>
-                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[100px]">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary">
                     Condition
                   </th>
-                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[110px]">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary">
                     Date
                   </th>
                 </tr>
@@ -443,12 +448,12 @@ export function ExpandedDetailsView({
                     return (
                       <tr
                         key={listing.id || index}
-                        className={`border-b border-border-subtle hover:bg-brand-darker hover:bg-opacity-50 transition-colors ${
-                          isWithinRange ? 'bg-white bg-opacity-[0.02]' : ''
-                        }`}
+                        className="border-b border-border-subtle hover:bg-brand-darker hover:bg-opacity-50 transition-colors"
                       >
-                        <td className="py-6pt pr-8pt min-w-[220px]">
-                          <p className="text-10pt font-medium text-text-primary whitespace-nowrap">
+                        <td className="py-6pt pr-8pt">
+                          <p className={`text-10pt font-medium whitespace-nowrap ${
+                            isWithinRange ? 'text-text-primary' : 'text-text-secondary'
+                          }`}>
                             {(listing.title || 'Untitled listing').length > 30
                               ? `${(listing.title || 'Untitled listing').substring(0, 30)}...`
                               : (listing.title || 'Untitled listing')
@@ -460,18 +465,33 @@ export function ExpandedDetailsView({
                             </p>
                           )}
                         </td>
-                        <td className="py-6pt pr-8pt min-w-[80px]">
-                          <p className="text-10pt font-bold text-text-primary whitespace-nowrap">
+                        <td className="py-6pt pr-8pt">
+                          <p className={`text-10pt font-bold whitespace-nowrap ${
+                            isWithinRange ? 'text-text-primary' : 'text-text-secondary'
+                          }`}>
                             {listing.price || '-'}
                           </p>
                         </td>
-                        <td className="py-6pt pr-8pt min-w-[100px]">
-                          <p className="text-9pt text-text-secondary whitespace-nowrap">
-                            {listing.condition || '-'}
+                        <td className="py-6pt pr-8pt">
+                          <p className={`text-9pt whitespace-nowrap ${
+                            isWithinRange ? 'text-text-primary' : 'text-text-secondary'
+                          }`}>
+                            {(() => {
+                              const condition = listing.condition
+                              if (!condition) return '-'
+                              switch (condition) {
+                                case 'NEW': return 'new'
+                                case 'USED_NICELY': return 'used nicely'
+                                case 'USED': return 'used'
+                                default: return condition.toLowerCase()
+                              }
+                            })()}
                           </p>
                         </td>
-                        <td className="py-6pt pr-8pt min-w-[110px]">
-                          <p className="text-9pt text-text-secondary whitespace-nowrap">
+                        <td className="py-6pt pr-8pt">
+                          <p className={`text-9pt whitespace-nowrap ${
+                            isWithinRange ? 'text-text-primary' : 'text-text-secondary'
+                          }`}>
                             {formatDate(listing.lastUpdatedAt || listing.date)}
                           </p>
                         </td>
