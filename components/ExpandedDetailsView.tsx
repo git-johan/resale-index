@@ -75,22 +75,10 @@ export function ExpandedDetailsView({
   // Auto-scroll to estimate section when component mounts
   useEffect(() => {
     if (estimateSectionRef.current) {
-      // Get the container that has overflow-y-auto (the fixed inset-0 div)
-      const scrollContainer = estimateSectionRef.current.closest('.overflow-y-auto') as HTMLElement
-      if (scrollContainer) {
-        // Get the estimate section's position relative to the container
-        const estimateRect = estimateSectionRef.current.getBoundingClientRect()
-        const containerRect = scrollContainer.getBoundingClientRect()
-
-        // Calculate exact scroll position to put estimate at top
-        const targetScrollTop = scrollContainer.scrollTop + (estimateRect.top - containerRect.top)
-
-        // Smooth scroll to exact position
-        scrollContainer.scrollTo({
-          top: targetScrollTop,
-          behavior: 'smooth'
-        })
-      }
+      estimateSectionRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
     }
   }, []) // Empty dependency array means this runs only on mount
 
