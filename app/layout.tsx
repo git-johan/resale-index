@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: 'Tings Analytics',
     images: [
       {
-        url: '/favicon.png', // Will use favicon as fallback, you can add a larger image later
+        url: '/social-share.png',
         width: 1200,
         height: 630,
         alt: 'Tings Analytics - Resale Value Analytics',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Tings Analytics',
     description: 'Professional resale value analytics for streetwear and sneakers.',
-    images: ['/favicon.png'],
+    images: ['/social-share.png'],
     creator: '@tings', // Add your Twitter handle if you have one
   },
 
