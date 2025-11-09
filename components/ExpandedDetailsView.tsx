@@ -298,7 +298,7 @@ export function ExpandedDetailsView({
         </div>
 
         {/* Details Content Section */}
-        <div className="space-y-0">
+        <div className="space-y-0 min-h-[600px]">
         {/* Price Analysis Section */}
         <div className="bg-brand-darker px-12pt py-8pt">
           <div className="mb-8pt flex items-center gap-10pt">
