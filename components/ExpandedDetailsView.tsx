@@ -288,7 +288,7 @@ export function ExpandedDetailsView({
         <div className="space-y-0">
         {/* Price Analysis Section */}
         <div className="bg-brand-darker px-12pt py-8pt">
-          <h4 className="text-20pt font-normal text-text-secondary mb-8pt">price analysis</h4>
+          <h4 className="text-20pt font-normal text-text-secondary mb-8pt">price trend</h4>
 
           {/* Price Distribution Chart */}
           {listings.length > 0 ? (
@@ -330,10 +330,10 @@ export function ExpandedDetailsView({
               {/* Table Header */}
               <thead>
                 <tr className="border-b border-border-subtle">
-                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[260px]">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[220px]">
                     Title
                   </th>
-                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[100px]">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[80px]">
                     Price
                   </th>
                   <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[100px]">
@@ -413,12 +413,41 @@ export function ExpandedDetailsView({
                       }
                     }
 
+                    // Parse estimate range to check if listing is within range
+                    const parseEstimateRange = (rangeStr?: string): { min: number, max: number } | null => {
+                      if (!rangeStr) return null
+                      // Match pattern like "1750-2799kr" or "1 750 - 2 799 kr"
+                      const match = rangeStr.match(/(\d+(?:\s?\d+)*)\s*-\s*(\d+(?:\s?\d+)*)/)
+                      if (!match) return null
+                      const min = parseFloat(match[1].replace(/\s/g, ''))
+                      const max = parseFloat(match[2].replace(/\s/g, ''))
+                      if (isNaN(min) || isNaN(max)) return null
+                      return { min, max }
+                    }
+
+                    const parsePrice = (priceStr?: string): number | null => {
+                      if (!priceStr) return null
+                      // Match digits with optional spaces: "1800", "2 500", "12500"
+                      const match = priceStr.match(/(\d+(?:\s?\d+)*)/)
+                      if (!match) return null
+                      // Remove spaces and convert to number
+                      const priceNumber = parseFloat(match[1].replace(/\s/g, ''))
+                      return isNaN(priceNumber) ? null : priceNumber
+                    }
+
+                    const estimateRange = parseEstimateRange(stats.estimateRange)
+                    const listingPrice = parsePrice(listing.price)
+                    const isWithinRange = estimateRange && listingPrice &&
+                      listingPrice >= estimateRange.min && listingPrice <= estimateRange.max
+
                     return (
                       <tr
                         key={listing.id || index}
-                        className="border-b border-border-subtle hover:bg-brand-darker hover:bg-opacity-50 transition-colors"
+                        className={`border-b border-border-subtle hover:bg-brand-darker hover:bg-opacity-50 transition-colors ${
+                          isWithinRange ? 'bg-white bg-opacity-[0.02]' : ''
+                        }`}
                       >
-                        <td className="py-6pt pr-8pt min-w-[260px]">
+                        <td className="py-6pt pr-8pt min-w-[220px]">
                           <p className="text-10pt font-medium text-text-primary whitespace-nowrap">
                             {(listing.title || 'Untitled listing').length > 30
                               ? `${(listing.title || 'Untitled listing').substring(0, 30)}...`
@@ -431,9 +460,9 @@ export function ExpandedDetailsView({
                             </p>
                           )}
                         </td>
-                        <td className="py-6pt pr-8pt min-w-[100px]">
+                        <td className="py-6pt pr-8pt min-w-[80px]">
                           <p className="text-10pt font-bold text-text-primary whitespace-nowrap">
-                            {listing.price || 'Price not available'}
+                            {listing.price || '-'}
                           </p>
                         </td>
                         <td className="py-6pt pr-8pt min-w-[100px]">

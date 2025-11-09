@@ -112,16 +112,16 @@ export function PriceDistributionChart({ listings, height = 160, estimateValue, 
 
     const datasets: any[] = []
 
-    // Add dataset for points within estimate range (white)
+    // Add dataset for points within estimate range (white 70% opacity)
     if (withinRangePoints.length > 0) {
       datasets.push({
         label: 'Within Range',
         data: withinRangePoints,
-        backgroundColor: '#ffffff', // white for within range
+        backgroundColor: 'rgba(255, 255, 255, 0.8)', // white 80% opacity for within range
         borderColor: 'transparent',
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#ffffff',
+        pointHoverBackgroundColor: 'rgba(255, 255, 255, 0.9)', // slightly more opaque on hover
         pointBorderWidth: 0,
         pointHoverBorderWidth: 0,
         showLine: false,
@@ -129,16 +129,16 @@ export function PriceDistributionChart({ listings, height = 160, estimateValue, 
       })
     }
 
-    // Add dataset for points outside estimate range (light gray)
+    // Add dataset for points outside estimate range (white 30% opacity)
     if (outsideRangePoints.length > 0) {
       datasets.push({
         label: 'Outside Range',
         data: outsideRangePoints,
-        backgroundColor: '#9a9a9a', // brand-gray for outside range (lighter)
+        backgroundColor: 'rgba(255, 255, 255, 0.25)', // white 25% opacity for outside range
         borderColor: 'transparent',
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#9a9a9a', // brand-gray
+        pointHoverBackgroundColor: 'rgba(255, 255, 255, 0.4)', // slightly more opaque on hover
         pointBorderWidth: 0,
         pointHoverBorderWidth: 0,
         showLine: false,
