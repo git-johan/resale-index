@@ -596,7 +596,7 @@ function HomePageContent() {
                 <div className="flex-shrink-0">
                   <StackItem
                     variant="estimate"
-                    content="Details"
+                    content="details"
                     onClick={handleEstimateToggle}
                     className="text-right"
                   />

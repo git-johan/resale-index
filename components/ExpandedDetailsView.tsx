@@ -276,7 +276,7 @@ export function ExpandedDetailsView({
             <div className="flex-shrink-0">
               <StackItem
                 variant="estimate"
-                content="Close"
+                content="close"
                 onClick={onClose}
                 className="text-right"
               />
@@ -330,10 +330,10 @@ export function ExpandedDetailsView({
               {/* Table Header */}
               <thead>
                 <tr className="border-b border-border-subtle">
-                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[280px]">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[260px]">
                     Title
                   </th>
-                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[120px]">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[100px]">
                     Price
                   </th>
                   <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[100px]">
@@ -418,10 +418,10 @@ export function ExpandedDetailsView({
                         key={listing.id || index}
                         className="border-b border-border-subtle hover:bg-brand-darker hover:bg-opacity-50 transition-colors"
                       >
-                        <td className="py-6pt pr-8pt min-w-[280px]">
+                        <td className="py-6pt pr-8pt min-w-[260px]">
                           <p className="text-10pt font-medium text-text-primary whitespace-nowrap">
-                            {(listing.title || 'Untitled listing').length > 35
-                              ? `${(listing.title || 'Untitled listing').substring(0, 35)}...`
+                            {(listing.title || 'Untitled listing').length > 30
+                              ? `${(listing.title || 'Untitled listing').substring(0, 30)}...`
                               : (listing.title || 'Untitled listing')
                             }
                           </p>
@@ -431,7 +431,7 @@ export function ExpandedDetailsView({
                             </p>
                           )}
                         </td>
-                        <td className="py-6pt pr-8pt min-w-[120px]">
+                        <td className="py-6pt pr-8pt min-w-[100px]">
                           <p className="text-10pt font-bold text-text-primary whitespace-nowrap">
                             {listing.price || 'Price not available'}
                           </p>
