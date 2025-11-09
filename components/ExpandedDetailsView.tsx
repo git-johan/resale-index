@@ -454,10 +454,18 @@ export function ExpandedDetailsView({
                           <p className={`text-10pt font-medium whitespace-nowrap ${
                             isWithinRange ? 'text-text-primary' : 'text-text-secondary'
                           }`}>
-                            {(listing.title || 'Untitled listing').length > 37
-                              ? `${(listing.title || 'Untitled listing').substring(0, 37)}...`
-                              : (listing.title || 'Untitled listing')
-                            }
+                            <span className="md:hidden">
+                              {(listing.title || 'Untitled listing').length > 40
+                                ? `${(listing.title || 'Untitled listing').substring(0, 40)}...`
+                                : (listing.title || 'Untitled listing')
+                              }
+                            </span>
+                            <span className="hidden md:inline">
+                              {(listing.title || 'Untitled listing').length > 60
+                                ? `${(listing.title || 'Untitled listing').substring(0, 60)}...`
+                                : (listing.title || 'Untitled listing')
+                              }
+                            </span>
                           </p>
                           {listing.id && (
                             <p className="text-9pt text-text-secondary whitespace-nowrap">
