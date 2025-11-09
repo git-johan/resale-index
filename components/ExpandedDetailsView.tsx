@@ -451,20 +451,11 @@ export function ExpandedDetailsView({
                         className="border-b border-border-subtle hover:bg-brand-darker hover:bg-opacity-50 transition-colors"
                       >
                         <td className="py-6pt pr-8pt">
-                          <p className={`text-10pt font-medium whitespace-nowrap ${
+                          <p className={`text-10pt font-medium ${
                             isWithinRange ? 'text-text-primary' : 'text-text-secondary'
                           }`}>
-                            <span className="md:hidden">
-                              {(listing.title || 'Untitled listing').length > 40
-                                ? `${(listing.title || 'Untitled listing').substring(0, 40)}...`
-                                : (listing.title || 'Untitled listing')
-                              }
-                            </span>
-                            <span className="hidden md:inline">
-                              {(listing.title || 'Untitled listing').length > 60
-                                ? `${(listing.title || 'Untitled listing').substring(0, 60)}...`
-                                : (listing.title || 'Untitled listing')
-                              }
+                            <span className="block truncate max-w-[200px] md:max-w-[400px]">
+                              {listing.title || 'Untitled listing'}
                             </span>
                           </p>
                           {listing.id && (
