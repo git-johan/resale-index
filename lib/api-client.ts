@@ -165,7 +165,7 @@ class ApiClient {
 
   /**
    * Get detailed listings for "See all details" functionality
-   * Fetches up to 100k listings with full data
+   * Fetches up to 1k listings with full data (sample)
    */
   async getDetailedListings(brandName: string, options: TagOptions): Promise<DetailedListingsResponse> {
     const {

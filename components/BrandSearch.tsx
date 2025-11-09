@@ -154,7 +154,7 @@ export const BrandSearch = forwardRef<BrandSearchRef, BrandSearchProps>(function
                   onChange={handleInputChange}
                   onBlur={handleInputBlur}
                   onFocus={handleInputFocus}
-                  placeholder="enter brand"
+                  placeholder="add brand"
                   className={`text-20pt font-normal bg-transparent border-none outline-none placeholder-text-secondary leading-1.2 m-0 w-full ${
                     (isPendingSuggestions || isLoadingSuggestions)
                       ? 'text-text-secondary cursor-wait'

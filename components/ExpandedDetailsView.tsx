@@ -288,7 +288,7 @@ export function ExpandedDetailsView({
         <div className="space-y-0">
         {/* Price Analysis Section */}
         <div className="bg-brand-darker px-12pt py-8pt">
-          <h4 className="text-13pt font-medium text-text-primary mb-8pt">Price Analysis</h4>
+          <h4 className="text-20pt font-normal text-text-secondary mb-8pt">price analysis</h4>
 
           {/* Price Distribution Chart */}
           {listings.length > 0 ? (
@@ -314,111 +314,155 @@ export function ExpandedDetailsView({
 
         {/* Detailed Listings Table */}
         <div className="bg-brand-darker px-12pt py-8pt">
-          <h4 className="text-13pt font-medium text-text-primary mb-8pt">
-            Listings ({listings.length > 0 ? listings.length.toLocaleString('nb-NO') : listingsCount.toLocaleString('nb-NO')} total{(listings.length === 1000 || listingsCount === 1000) ? ' • sample' : ''})
-          </h4>
-
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-2 pb-8pt border-b border-border-subtle text-9pt font-medium text-text-secondary">
-            <div className="col-span-6 pl-0">Title</div>
-            <div className="col-span-3">Price</div>
-            <div className="col-span-3">Date</div>
+          <div className="mb-8pt flex items-center gap-10pt">
+            <h4 className="text-20pt font-normal text-text-secondary">listings</h4>
+            <div className="text-10pt font-light leading-1.2 text-text-secondary">
+              {listings.length > 0 && listings.length === 1000 && listingsCount > 1000
+                ? `${listings.length.toLocaleString('nb-NO')} of ${listingsCount.toLocaleString('nb-NO')}`
+                : `${listings.length > 0 ? listings.length.toLocaleString('nb-NO') : listingsCount.toLocaleString('nb-NO')} total`
+              }
+            </div>
           </div>
 
-          {/* Listings Data */}
-          <div className="space-y-0">
-            {detailedListingsError ? (
-              <div className="py-12 text-center">
-                <p className="text-10pt text-red-400 mb-2">Failed to load detailed listings</p>
-                <p className="text-9pt text-text-secondary mb-4">{detailedListingsError}</p>
-                {onLoadDetailedListings && (
-                  <button
-                    onClick={onLoadDetailedListings}
-                    className="text-9pt text-blue-400 underline hover:text-blue-300 transition-colors"
-                  >
-                    Try again
-                  </button>
-                )}
-              </div>
-            ) : detailedListingsLoading ? (
-              <div className="py-12 text-center">
-                <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-10pt text-text-secondary">Loading detailed listings...</p>
-              </div>
-            ) : listings.length > 0 ? (
-              (() => {
-                console.log(`ExpandedDetailsView: Displaying ${listings.length} listings`)
-                return listings
-              })()
-                .sort((a, b) => {
-                  // Sort by most recent first - try multiple date fields
-                  const getDateValue = (listing: any) => {
-                    const dateStr = listing.lastUpdatedAt || listing.date || listing.created_at || listing.date_listed
-                    if (!dateStr) return 0
+          {/* Horizontal Scrollable Table */}
+          <div className="overflow-x-auto -mx-12pt px-12pt">
+            <table className="w-full border-collapse">
+              {/* Table Header */}
+              <thead>
+                <tr className="border-b border-border-subtle">
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[300px]">
+                    Title
+                  </th>
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[120px]">
+                    Price
+                  </th>
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[100px]">
+                    Condition
+                  </th>
+                  <th className="text-left pb-8pt text-9pt font-medium text-text-secondary min-w-[110px]">
+                    Date
+                  </th>
+                </tr>
+              </thead>
 
-                    const parsed = Date.parse(dateStr)
-                    return isNaN(parsed) ? 0 : parsed
-                  }
-
-                  const dateA = getDateValue(a)
-                  const dateB = getDateValue(b)
-
-                  // If both have valid dates, sort by date (most recent first)
-                  if (dateA && dateB) return dateB - dateA
-
-                  // Put listings with dates before those without
-                  if (dateA && !dateB) return -1
-                  if (!dateA && dateB) return 1
-
-                  return 0 // Both have no dates
-                })
-                .map((listing, index) => {
-                // Format date
-                const formatDate = (dateString?: string) => {
-                  if (!dateString) return 'Unknown'
-                  try {
-                    const date = new Date(dateString)
-                    // Format as DD.MM.YYYY (Norwegian/European format)
-                    return date.toLocaleDateString('no-NO', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric'
-                    })
-                  } catch {
-                    return 'Unknown'
-                  }
-                }
-
-                return (
-                  <div key={listing.id || index} className="grid grid-cols-12 gap-2 py-6pt pr-8pt border-b border-border-subtle hover:bg-brand-darker hover:bg-opacity-50 transition-colors">
-                    <div className="col-span-6 pl-0">
-                      <p className="text-10pt font-medium text-text-primary truncate" title={listing.title}>
-                        {listing.title || 'Untitled listing'}
-                      </p>
-                      {listing.id && (
-                        <p className="text-9pt text-text-secondary">ID: {listing.id}</p>
+              {/* Table Body */}
+              <tbody>
+                {detailedListingsError ? (
+                  <tr>
+                    <td colSpan={4} className="py-12 text-center">
+                      <p className="text-10pt text-red-400 mb-2">Failed to load detailed listings</p>
+                      <p className="text-9pt text-text-secondary mb-4">{detailedListingsError}</p>
+                      {onLoadDetailedListings && (
+                        <button
+                          onClick={onLoadDetailedListings}
+                          className="text-9pt text-blue-400 underline hover:text-blue-300 transition-colors"
+                        >
+                          Try again
+                        </button>
                       )}
-                    </div>
-                    <div className="col-span-3">
-                      <p className="text-10pt font-bold text-text-primary">
-                        {listing.price || 'Price not available'}
-                      </p>
-                    </div>
-                    <div className="col-span-3">
-                      <p className="text-9pt text-text-secondary">{formatDate(listing.lastUpdatedAt || listing.date)}</p>
-                    </div>
-                  </div>
-                )
-              })
-            ) : (
-              <div
-                className="py-12 text-center cursor-pointer bg-brand-darker hover:bg-opacity-80 rounded transition-colors"
-                onClick={onLoadDetailedListings}
-              >
-                <p className="text-10pt text-text-secondary">No detailed listings available</p>
-                <p className="text-9pt text-text-secondary mt-2">Click to load listings data</p>
-              </div>
-            )}
+                    </td>
+                  </tr>
+                ) : detailedListingsLoading ? (
+                  <tr>
+                    <td colSpan={4} className="py-12 text-center">
+                      <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                      <p className="text-10pt text-text-secondary">Loading detailed listings...</p>
+                    </td>
+                  </tr>
+                ) : listings.length > 0 ? (
+                  (() => {
+                    console.log(`ExpandedDetailsView: Displaying ${listings.length} listings`)
+                    return listings
+                  })()
+                    .sort((a, b) => {
+                      // Sort by most recent first - try multiple date fields
+                      const getDateValue = (listing: any) => {
+                        const dateStr = listing.lastUpdatedAt || listing.date || listing.created_at || listing.date_listed
+                        if (!dateStr) return 0
+
+                        const parsed = Date.parse(dateStr)
+                        return isNaN(parsed) ? 0 : parsed
+                      }
+
+                      const dateA = getDateValue(a)
+                      const dateB = getDateValue(b)
+
+                      // If both have valid dates, sort by date (most recent first)
+                      if (dateA && dateB) return dateB - dateA
+
+                      // Put listings with dates before those without
+                      if (dateA && !dateB) return -1
+                      if (!dateA && dateB) return 1
+
+                      return 0 // Both have no dates
+                    })
+                    .map((listing, index) => {
+                    // Format date
+                    const formatDate = (dateString?: string) => {
+                      if (!dateString) return 'Unknown'
+                      try {
+                        const date = new Date(dateString)
+                        // Format as DD.MM.YYYY (Norwegian/European format)
+                        return date.toLocaleDateString('no-NO', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })
+                      } catch {
+                        return 'Unknown'
+                      }
+                    }
+
+                    return (
+                      <tr
+                        key={listing.id || index}
+                        className="border-b border-border-subtle hover:bg-brand-darker hover:bg-opacity-50 transition-colors"
+                      >
+                        <td className="py-6pt pr-8pt min-w-[300px]">
+                          <p className="text-10pt font-medium text-text-primary whitespace-nowrap">
+                            {(listing.title || 'Untitled listing').length > 35
+                              ? `${(listing.title || 'Untitled listing').substring(0, 35)}...`
+                              : (listing.title || 'Untitled listing')
+                            }
+                          </p>
+                          {listing.id && (
+                            <p className="text-9pt text-text-secondary whitespace-nowrap">
+                              ID: {listing.id}
+                            </p>
+                          )}
+                        </td>
+                        <td className="py-6pt pr-8pt min-w-[120px]">
+                          <p className="text-10pt font-bold text-text-primary whitespace-nowrap">
+                            {listing.price || 'Price not available'}
+                          </p>
+                        </td>
+                        <td className="py-6pt pr-8pt min-w-[100px]">
+                          <p className="text-9pt text-text-secondary whitespace-nowrap">
+                            {listing.condition || '-'}
+                          </p>
+                        </td>
+                        <td className="py-6pt pr-8pt min-w-[110px]">
+                          <p className="text-9pt text-text-secondary whitespace-nowrap">
+                            {formatDate(listing.lastUpdatedAt || listing.date)}
+                          </p>
+                        </td>
+                      </tr>
+                    )
+                  })
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="py-12 text-center cursor-pointer bg-brand-darker hover:bg-opacity-80 rounded transition-colors"
+                      onClick={onLoadDetailedListings}
+                    >
+                      <p className="text-10pt text-text-secondary">No detailed listings available</p>
+                      <p className="text-9pt text-text-secondary mt-2">Click to load listings data</p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
 
         </div>

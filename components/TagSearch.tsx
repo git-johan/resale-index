@@ -117,7 +117,7 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
               onKeyDown={onKeyDown}
-              placeholder="search tags..."
+              placeholder="+ add tags"
               className="text-20pt font-medium text-text-primary bg-transparent border-none outline-none placeholder-text-secondary placeholder:font-light leading-1.2 m-0 w-full"
             />
           </div>
