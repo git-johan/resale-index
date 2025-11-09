@@ -103,7 +103,7 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
         className="bg-brand-darker"
         style={{
           boxShadow: (isFocused || searchQuery.trim())
-            ? 'inset 0 0 0 2pt rgba(255, 255, 255, 0.1)'
+            ? 'inset 0 0 0 2pt rgba(232, 232, 232, 0.1)'
             : 'none'
         }}
       >

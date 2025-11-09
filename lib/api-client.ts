@@ -179,10 +179,10 @@ class ApiClient {
       tagExclude: excludedTags.map(t => t.name), // Exclude tag names
       tagsLimit: 200,
       listingsPerTagLimit: 0, // Don't want per-tag breakdown
-      listingsSampleLimit: 100000, // Get ALL listings for entire filter
-      sampleLimit: 100000, // Try alternative parameter name
-      maxListings: 100000, // Try another alternative
-      limit: 100000, // Try simple limit
+      listingsSampleLimit: 1000, // Get sample of listings for entire filter
+      sampleLimit: 1000, // Try alternative parameter name
+      maxListings: 1000, // Try another alternative
+      limit: 1000, // Try simple limit
       usePostgres: true // Required for proper data
     }
 

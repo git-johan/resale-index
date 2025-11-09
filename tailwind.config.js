@@ -43,14 +43,15 @@ module.exports = {
         '33pt': '33pt',
       },
       colors: {
-        'brand-dark': '#353535',
-        'brand-darker': 'rgba(0, 0, 0, 0.4)',
+        'brand-dark': '#1c1c1c',
+        'brand-darker': '#121212',
         'brand-gray': '#9a9a9a',
         'brand-gray-dark': '#666666',
         'text-secondary': '#787878',
-        'text-primary': '#ffffff',
+        'text-primary': '#E8E8E8',
         'border-subtle': '#2c2c2c',
         'exclusion-bg': '#470000',
+        'white-soft': '#E8E8E8',
       },
       lineHeight: {
         '1.1': '1.1',

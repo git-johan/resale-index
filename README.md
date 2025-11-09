@@ -44,13 +44,13 @@ resale-index/
 ## 🚀 Production Deployment
 
 ### Live Application
-- **Production URL**: [resale.tings.com](https://resale.tings.com)
+- **Production URL**: [analytics.tings.com](https://analytics.tings.com)
 - **Hosting**: Railway
 - **Domain**: Custom domain with automatic SSL
 
 ### Deployment Architecture
 ```
-GitHub (Source) → Railway (Build & Deploy) → resale.tings.com (Live)
+GitHub (Source) → Railway (Build & Deploy) → analytics.tings.com (Live)
 ```
 
 ### Automatic Deployment Process
@@ -219,22 +219,74 @@ Railway automatically:
 ## 📈 Monitoring & Analytics
 
 ### Error Tracking (Sentry)
-- **Setup**: `@sentry/nextjs` integration
-- **Coverage**: Client and server-side error tracking
-- **Alerts**: Email notifications for new errors
-- **Performance**: Transaction monitoring and performance insights
+
+#### Setup Instructions
+1. **Create Sentry Account**: Visit [sentry.io](https://sentry.io) and create a free account
+2. **Create Project**:
+   - Choose "React" as platform
+   - Project name: "resale-index"
+   - Copy the DSN URL provided
+
+3. **Configure Environment Variables in Railway**:
+   ```env
+   SENTRY_DSN=https://[your-dsn]@sentry.io/[project-id]
+   SENTRY_ORG=your-organization-slug
+   SENTRY_PROJECT=resale-index
+   ```
+
+4. **Features**:
+   - Client and server-side error tracking
+   - Email notifications for new errors
+   - Transaction monitoring and performance insights
+   - Session replay for debugging
+   - Release tracking with source maps
+
+#### Error Filtering
+- Filters out ResizeObserver false positives
+- Production optimized with 10% transaction sampling
+- Unhandled promise rejection capturing
+- Environment-based configuration
 
 ### Uptime Monitoring (UptimeRobot)
-- **Monitoring**: 5-minute interval checks
-- **Alerts**: Email notifications for downtime
-- **Status Page**: Public uptime statistics
-- **Global Checks**: Multiple locations for accuracy
+
+#### Setup Instructions
+1. **Create Account**: Visit [uptimerobot.com](https://uptimerobot.com) and sign up (free tier available)
+2. **Add Monitor**:
+   - Monitor Type: HTTP(s)
+   - Friendly Name: "Resale Index - Analytics"
+   - URL: `https://analytics.tings.com`
+   - Monitoring Interval: 5 minutes
+3. **Configure Alerts**:
+   - Email notifications for downtime
+   - SMS alerts (paid tier)
+   - Slack/Discord webhook integration
+
+#### Monitoring Features
+- 5-minute interval health checks
+- Global monitoring locations
+- Public status pages
+- 50 monitors on free tier
+- 99.9% uptime SLA tracking
 
 ### Performance Monitoring
-- **Core Web Vitals**: Lighthouse metrics tracking
-- **Bundle Analysis**: Build size monitoring
-- **API Performance**: Response time tracking
-- **User Analytics**: Usage patterns and popular searches
+
+#### Core Web Vitals
+- **Largest Contentful Paint (LCP)**: < 2.5 seconds
+- **First Input Delay (FID)**: < 100 milliseconds
+- **Cumulative Layout Shift (CLS)**: < 0.1
+
+#### Bundle Analysis
+```bash
+# Analyze bundle size
+npm run build
+npx @next/bundle-analyzer
+```
+
+#### API Performance Monitoring
+- Response time tracking via Sentry
+- Error rate monitoring
+- External API dependency tracking
+- Database query performance (if applicable)
 
 ## 🛡️ Security
 
@@ -393,4 +445,4 @@ git commit -m "Initial setup"
 git push origin master
 ```
 
-Your application will be live at [resale.tings.com](https://resale.tings.com) within 5 minutes! 🎉
+Your application will be live at [analytics.tings.com](https://analytics.tings.com) within 5 minutes! 🎉

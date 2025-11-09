@@ -6,7 +6,6 @@ import { StackItem } from '@/components/StackItem'
 import { BrandSearch, BrandSearchRef } from '@/components/BrandSearch'
 import { TagSearch, TagSearchRef } from '@/components/TagSearch'
 import { ExpandedDetailsView } from '@/components/ExpandedDetailsView'
-import { SectionTitle } from '@/components/SectionTitle'
 import { useQueryState } from '@/hooks/useQueryState'
 import { useTagSearch } from '@/hooks/useTagSearch'
 import { rankTags, formatTagDisplay, calculatePriceImpactScore, getScoreColor } from '@/lib/tag-ranking'
@@ -386,7 +385,29 @@ function HomePageContent() {
         <>
           {/* Scrollable Content Section */}
           <div className="flex-1 overflow-y-auto">
-            {/* Unified Brand Component */}
+            {/* Header with T Symbol and Text - Scrolls away */}
+            <div className="py-8pt px-12pt flex items-center font-sf-pro w-full text-24pt font-semibold bg-brand-dark border-b border-border-subtle" style={{color: 'rgba(232, 232, 232, 0.8)'}}>
+              <div className="flex items-center gap-10pt">
+                {/* T Symbol - 24pt height */}
+                <div className="h-6 flex items-center">
+                  <svg width="14" height="24" viewBox="0 0 14 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.000976562 17.0493H12.5108C13.2785 17.0493 13.9008 17.6716 13.9008 18.4393V22.2012C13.9008 23.1942 13.0958 23.9992 12.1028 23.9992H6.95089C3.11256 23.9992 0.000976562 20.8876 0.000976562 17.0493Z" fill="rgba(232, 232, 232, 0.6)"/>
+                    <path d="M13.8999 10.6929L13.8999 7.56556C13.8999 6.84811 13.3183 6.26651 12.6009 6.26651L11.6219 6.26651C9.21839 6.26651 7.27 4.31811 7.27 1.91465L7.27 1.29905C7.27 0.581604 6.6884 -3.15225e-07 5.97095 -3.46585e-07L1.29917 -5.50795e-07C0.581728 -5.82156e-07 0.000123952 0.581604 0.000123921 1.29905L0.000123769 4.76448L0.000123517 10.5413C0.000123482 11.3425 0.649586 11.992 1.45074 11.992L12.6009 11.992C13.3183 11.992 13.8999 11.4104 13.8999 10.6929Z" fill="rgba(232, 232, 232, 0.5)"/>
+                    <foreignObject x="-2.59712" y="1.68901" width="17.8105" height="24.9091"><div xmlns="http://www.w3.org/1999/xhtml" style={{backdropFilter:'blur(1.3px)', clipPath:'url(#bgblur_0_71_430_clip_path)', height:'100%', width:'100%'}}></div></foreignObject>
+                    <path data-figma-bg-blur-radius="2.5981" d="M0.0517578 4.28711C4.03952 4.28713 7.27246 7.52005 7.27246 11.5078V16.9854H7.27148V18.4824C7.27148 21.4714 9.64861 23.9029 12.6152 23.9951C12.59 23.9965 12.5646 24 12.5391 24H6.96484C3.11879 23.9999 0.000976562 20.8812 0.000976562 17.0352V4.33789C0.000976562 4.30986 0.0237319 4.28711 0.0517578 4.28711Z" fill="rgba(232, 232, 232, 0.7)"/>
+                    <defs>
+                      <clipPath id="bgblur_0_71_430_clip_path" transform="translate(2.59712 -1.68901)">
+                        <path d="M0.0517578 4.28711C4.03952 4.28713 7.27246 7.52005 7.27246 11.5078V16.9854H7.27148V18.4824C7.27148 21.4714 9.64861 23.9029 12.6152 23.9951C12.59 23.9965 12.5646 24 12.5391 24H6.96484C3.11879 23.9999 0.000976562 20.8812 0.000976562 17.0352V4.33789C0.000976562 4.30986 0.0237319 4.28711 0.0517578 4.28711Z"/>
+                      </clipPath>
+                    </defs>
+                  </svg>
+                </div>
+                {/* Text with 10pt gap - 24pt font */}
+                <h1 className="leading-1.2 m-0 font-semibold text-24pt">resale analytics</h1>
+              </div>
+            </div>
+
+            {/* Unified Brand Component - Stays sticky on scroll */}
             <div ref={brandRef} className="sticky top-0 z-20">
               <BrandSearch
                 ref={brandSearchComponentRef}
@@ -558,26 +579,28 @@ function HomePageContent() {
 
           {/* Footer Section - Estimate */}
           {currentStats && (
-            <div className="flex-shrink-0 group">
-              {/* Estimate section header with aligned action */}
-              <SectionTitle
-                title="Estimate"
-                action={{
-                  text: 'See all details',
-                  onClick: handleEstimateToggle
-                }}
-                showTopBorder
-                enableGroupHover
-              />
+            <div className="flex-shrink-0">
+              {/* Estimate section - two StackItems side by side */}
+              <div className="border-t border-border-subtle bg-brand-darker flex">
+                {/* Left: Estimate value and details */}
+                <div className="flex-1">
+                  <StackItem
+                    variant="estimate"
+                    content={currentStats.estimate}
+                    details={`${currentStats.estimateRange} • ${data?.listingsCount?.toLocaleString('nb-NO') || 0} listings`}
+                    onClick={handleEstimateToggle}
+                  />
+                </div>
 
-              {/* Estimate card */}
-              <div>
-                <StackItem
-                  variant="estimate"
-                  content={currentStats.estimate}
-                  details={`${currentStats.estimateRange} • ${data?.listingsCount?.toLocaleString('nb-NO') || 0} listings`}
-                  onClick={handleEstimateToggle}
-                />
+                {/* Right: Details button with same styling as estimate */}
+                <div className="flex-shrink-0">
+                  <StackItem
+                    variant="estimate"
+                    content="Details"
+                    onClick={handleEstimateToggle}
+                    className="text-right"
+                  />
+                </div>
               </div>
             </div>
           )}

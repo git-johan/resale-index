@@ -1,6 +1,7 @@
 // TypeScript interfaces for the unified StackItem component system
 
 export type StackItemVariant =
+  | 'header'
   | 'brand-search'
   | 'brand'
   | 'brand-searching'

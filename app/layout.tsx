@@ -58,7 +58,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-brand-dark font-sf-pro text-white leading-1.2">
+      <body className="min-h-screen bg-brand-dark font-sf-pro text-text-primary leading-1.2">
         {children}
       </body>
     </html>

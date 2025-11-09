@@ -23,8 +23,9 @@ export function StackItem({
   className = '',
   onClick
 }: StackItemProps) {
-  // 8 variants including the new brand-searching state and subtitle
+  // 9 variants including header, brand-searching state and subtitle
   const variantClasses = {
+    'header': 'text-20pt font-semibold text-text-primary bg-brand-dark border-b border-border-subtle',
     'brand-search': 'text-20pt font-medium text-text-primary border-b border-border-subtle bg-brand-darker',
     'brand': 'text-20pt font-semibold text-text-primary border-b border-border-subtle bg-brand-darker',
     'brand-searching': 'text-20pt font-medium text-text-primary bg-brand-darker',
@@ -41,7 +42,7 @@ export function StackItem({
 
     switch (variant) {
       case 'unselected':
-        return 'cursor-pointer hover:text-white transition-colors duration-200'
+        return 'cursor-pointer hover:text-text-primary transition-colors duration-200'
       default:
         return 'cursor-pointer hover:text-text-primary transition-colors duration-200'
     }
@@ -53,12 +54,17 @@ export function StackItem({
       onClick={onClick}
     >
       <div className="flex items-center gap-10pt flex-1 min-w-0">
-        <h3
-          className="leading-1.2 m-0"
-          style={variant === 'selected-excluded' ? { textDecoration: 'line-through' } : {}}
-        >
-          {content}
-        </h3>
+        {variant === 'header' ? (
+          // For header variant, render logo SVG
+          <div className="h-6 flex items-center" dangerouslySetInnerHTML={{ __html: content }} />
+        ) : (
+          <h3
+            className="leading-1.2 m-0"
+            style={variant === 'selected-excluded' ? { textDecoration: 'line-through' } : {}}
+          >
+            {content}
+          </h3>
+        )}
         {details && (
           <div className="flex flex-col items-start text-left">
             {(() => {
