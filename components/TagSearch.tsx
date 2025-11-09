@@ -35,6 +35,9 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
   isLoadingSuggestions,
   onKeyDown
 }, ref) {
+  // State for focus management
+  const [isFocused, setIsFocused] = useState(false)
+
   // Refs
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -66,6 +69,16 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
     onSearchQueryChange(value)
   }
 
+  // Handle input focus
+  const handleInputFocus = () => {
+    setIsFocused(true)
+  }
+
+  // Handle input blur
+  const handleInputBlur = () => {
+    setIsFocused(false)
+  }
+
   // Handle form submission (prevent default but don't do anything special)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,7 +98,9 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
   return (
     <div className="relative">
       {/* Search Input */}
-      <form onSubmit={handleSubmit} className="border-t border-b border-border-subtle bg-brand-darker">
+      <form onSubmit={handleSubmit} className={`bg-brand-darker ${
+        isFocused || searchQuery.trim() ? 'border-2 border-border-active' : 'border-2 border-transparent'
+      }`}>
         <div className="py-8pt px-12pt flex justify-between items-start font-sf-pro w-full">
           <div className="flex flex-col gap-0 flex-1 min-w-0">
             <input
@@ -93,6 +108,8 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
               type="text"
               value={searchQuery}
               onChange={handleInputChange}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
               onKeyDown={onKeyDown}
               placeholder="search tags..."
               className="text-20pt font-medium text-text-primary bg-transparent border-none outline-none placeholder-text-secondary placeholder:font-light leading-1.2 m-0 w-full"
