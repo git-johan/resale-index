@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { StackItem } from '@/components/StackItem'
 import { SectionTitle } from '@/components/SectionTitle'
 import { TagSearch, TagSearchRef } from '@/components/TagSearch'
@@ -69,6 +69,19 @@ export function ExpandedDetailsView({
   onTagExclude: onTagExcludeFromSearch,
   onTagSearchKeyDown
 }: ExpandedDetailsViewProps) {
+  // Ref for the estimate section to enable auto-scroll
+  const estimateSectionRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll to estimate section when component mounts
+  useEffect(() => {
+    if (estimateSectionRef.current) {
+      estimateSectionRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+    }
+  }, []) // Empty dependency array means this runs only on mount
+
   // No longer need local search state - using unified state from parent
 
   // Helper function to convert TagSuggestion to Tag (same as main page)
@@ -259,7 +272,7 @@ export function ExpandedDetailsView({
         )}
 
         {/* Estimate section - Sticky when scrolled */}
-        <div className="sticky top-0 z-10 bg-brand-dark">
+        <div ref={estimateSectionRef} className="sticky top-0 z-10 bg-brand-dark">
           {/* Estimate section - two StackItems side by side */}
           <div className="bg-brand-darker flex">
             {/* Left: Estimate value and details */}
