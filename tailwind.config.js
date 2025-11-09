@@ -51,7 +51,6 @@ module.exports = {
         'text-primary': '#ffffff',
         'border-subtle': '#2c2c2c',
         'exclusion-bg': '#470000',
-        'border-active': 'rgba(255, 255, 255, 0.1)',
       },
       lineHeight: {
         '1.1': '1.1',

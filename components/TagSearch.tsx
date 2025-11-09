@@ -98,9 +98,15 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
   return (
     <div className="relative">
       {/* Search Input */}
-      <form onSubmit={handleSubmit} className={`bg-brand-darker ${
-        isFocused || searchQuery.trim() ? 'border-2 border-border-active' : 'border-2 border-transparent'
-      }`}>
+      <form
+        onSubmit={handleSubmit}
+        className="bg-brand-darker"
+        style={{
+          boxShadow: (isFocused || searchQuery.trim())
+            ? 'inset 0 0 0 2pt rgba(255, 255, 255, 0.1)'
+            : 'none'
+        }}
+      >
         <div className="py-8pt px-12pt flex justify-between items-start font-sf-pro w-full">
           <div className="flex flex-col gap-0 flex-1 min-w-0">
             <input

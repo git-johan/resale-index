@@ -144,7 +144,7 @@ export const BrandSearch = forwardRef<BrandSearchRef, BrandSearchProps>(function
       {brandSearchActive ? (
         // Input State: Search with autocomplete
         <div className="relative">
-          <form onSubmit={handleSubmit} className="bg-brand-darker border-2 border-border-active">
+          <form onSubmit={handleSubmit} className="bg-brand-darker" style={{ boxShadow: 'inset 0 0 0 2pt rgba(255, 255, 255, 0.1)' }}>
             <div className="py-8pt px-12pt flex justify-between items-start font-sf-pro w-full">
               <div className="flex flex-col gap-0 flex-1 min-w-0">
                 <input
@@ -175,7 +175,8 @@ export const BrandSearch = forwardRef<BrandSearchRef, BrandSearchProps>(function
           {showDropdown && suggestions.length > 0 && (
             <div
               ref={dropdownRef}
-              className="absolute top-full left-0 right-0 z-30 bg-brand-darker border-2 border-t-0 border-border-active"
+              className="absolute top-full left-0 right-0 z-30 bg-brand-darker"
+              style={{ boxShadow: 'inset 2pt 0 0 0 rgba(255, 255, 255, 0.1), inset -2pt 0 0 0 rgba(255, 255, 255, 0.1), inset 0 -2pt 0 0 rgba(255, 255, 255, 0.1)' }}
             >
               {suggestions.map((suggestion, index) => (
                 <div
