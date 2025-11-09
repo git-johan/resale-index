@@ -146,7 +146,7 @@ export function ExpandedDetailsView({
             actions={[
               {
                 type: 'link',
-                text: 'Clear',
+                text: 'clear',
                 onClick: onClearBrand || (() => {}),
                 title: `Clear ${brand} filter`
               }
@@ -336,16 +336,16 @@ export function ExpandedDetailsView({
               <thead>
                 <tr className="border-b border-border-subtle">
                   <th className="text-left pb-8pt text-9pt font-medium text-text-secondary">
-                    Title
+                    title
                   </th>
                   <th className="text-left pb-8pt text-9pt font-medium text-text-secondary">
-                    Price
+                    price
                   </th>
                   <th className="text-left pb-8pt text-9pt font-medium text-text-secondary">
-                    Condition
+                    condition
                   </th>
                   <th className="text-left pb-8pt text-9pt font-medium text-text-secondary">
-                    Date
+                    date
                   </th>
                 </tr>
               </thead>
@@ -454,8 +454,8 @@ export function ExpandedDetailsView({
                           <p className={`text-10pt font-medium whitespace-nowrap ${
                             isWithinRange ? 'text-text-primary' : 'text-text-secondary'
                           }`}>
-                            {(listing.title || 'Untitled listing').length > 30
-                              ? `${(listing.title || 'Untitled listing').substring(0, 30)}...`
+                            {(listing.title || 'Untitled listing').length > 37
+                              ? `${(listing.title || 'Untitled listing').substring(0, 37)}...`
                               : (listing.title || 'Untitled listing')
                             }
                           </p>

@@ -230,7 +230,16 @@ export function PriceDistributionChart({ listings, height = 160, estimateValue, 
           font: {
             size: 10
           },
-          maxTicksLimit: 5
+          maxTicksLimit: 5,
+          callback: function(value: any, index: any, values: any) {
+            // Get the default formatted value and convert to lowercase
+            const date = new Date(value)
+            const formatted = date.toLocaleDateString('en-US', {
+              month: 'short',
+              year: 'numeric'
+            })
+            return formatted.toLowerCase()
+          }
         },
         border: {
           display: false

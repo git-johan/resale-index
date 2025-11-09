@@ -123,7 +123,7 @@ export const TagSearch = forwardRef<TagSearchRef, TagSearchProps>(function TagSe
           </div>
           {isLoadingSuggestions && (
             <div className="text-10pt font-normal text-text-primary flex-shrink-0 ml-15pt self-center">
-              Searching
+              searching
             </div>
           )}
         </div>

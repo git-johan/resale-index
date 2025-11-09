@@ -165,7 +165,7 @@ export const BrandSearch = forwardRef<BrandSearchRef, BrandSearchProps>(function
               </div>
               {(isPendingSuggestions || isLoadingSuggestions) && (
                 <div className="text-10pt font-normal text-text-primary flex-shrink-0 ml-15pt self-center">
-                  Searching
+                  searching
                 </div>
               )}
             </div>
@@ -204,7 +204,7 @@ export const BrandSearch = forwardRef<BrandSearchRef, BrandSearchProps>(function
                       }}
                       className="text-10pt font-normal transition-colors duration-200 flex-shrink-0 text-text-primary cursor-pointer hover:underline"
                     >
-                      Select
+                      select
                     </a>
                   </div>
                 </div>
@@ -221,7 +221,7 @@ export const BrandSearch = forwardRef<BrandSearchRef, BrandSearchProps>(function
           actions={[
             {
               type: 'link',
-              text: 'Clear',
+              text: 'clear',
               onClick: clearBrand,
               title: `Clear ${brand} filter`,
               disabled: loading
