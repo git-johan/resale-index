@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Tings Analytics',
+  title: 'Tings Resale Analytics',
   description: 'Get instant resale price analytics for any product.',
   keywords: ['resale', 'analytics', 'streetwear', 'sneakers', 'price estimates', 'tings'],
   authors: [{ name: 'Tings' }],
@@ -16,16 +16,16 @@ export const metadata: Metadata = {
 
   // Open Graph for social sharing (Facebook, LinkedIn, etc.)
   openGraph: {
-    title: 'Tings Analytics',
+    title: 'Tings Resale Analytics',
     description: 'Get instant resale price analytics for any product.',
     url: 'https://analytics.tings.com',
-    siteName: 'Tings Analytics',
+    siteName: 'Tings Resale Analytics',
     images: [
       {
         url: '/social-share.png',
         width: 1200,
         height: 630,
-        alt: 'Tings Analytics - Resale Value Analytics',
+        alt: 'Tings Resale Analytics - Resale Value Analytics',
       },
     ],
     locale: 'nb_NO',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   // Twitter Card for Twitter sharing
   twitter: {
     card: 'summary_large_image',
-    title: 'Tings Analytics',
+    title: 'Tings Resale Analytics',
     description: 'Get instant resale price analytics for any product.',
     images: ['/social-share.png'],
     creator: '@tings', // Add your Twitter handle if you have one
